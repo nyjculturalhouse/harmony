@@ -37,7 +37,11 @@ function renderFloor(containerId, rowsData) {
         }
 
         const rowNum = parseInt(row.row);
-        const allSeats = [...(row.seats || []), ...(row.disabled || []), ...(row.obstructed || [])].sort((a,b)=>a-b);
+const allSeats = [...new Set([
+    ...(row.seats || []),
+    ...(row.disabled || []),
+    ...(row.obstructed || [])
+])].sort((a, b) => a - b);
         
         allSeats.forEach((seatNum, index) => {
             const seatId = `${row.row}-${seatNum}`;
