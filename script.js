@@ -93,6 +93,14 @@ function renderFloor(containerId, rowsData) {
                 emptySpace.style.height = "25px";
                 seatsRow.appendChild(emptySpace);
             }
+
+            // [수정/추가] 9번 좌석을 그린 후, 그리고 19번 좌석을 그린 후에 통로 공백을 끼워 넣습니다.
+            if (i === 9 || i === 19) {
+                const aisleSpace = document.createElement("div");
+                aisleSpace.style.width = "20px"; // 통로 너비 (원하는 간격에 따라 숫자를 조절하세요)
+                aisleSpace.style.height = "25px";
+                seatsRow.appendChild(aisleSpace);
+            }
         }
 
         rowDiv.appendChild(seatsRow);
@@ -203,11 +211,10 @@ function setupBookingForm() {
         submitBtn.disabled = true;
         submitBtn.innerText = "예약 처리 중...";
         
-        // [수정] payload에 시트가 원하는 수량인 params.quantity 매핑용 quantity 데이터(selectedSeats.length)를 추가했습니다.
         const payload = {
             name: name,
             phone: phone, 
-            quantity: selectedSeats.length, // 시트에 전송될 선택 수량 추가
+            quantity: selectedSeats.length, 
             seats: selectedSeats.join(",")
         };
         
