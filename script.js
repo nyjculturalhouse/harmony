@@ -1,33 +1,42 @@
 const GAS_URL = "https://script.google.com/macros/s/AKfycbwEGlst8zJdzKQaQzMxzF7SVwrn9GcFVD24LT8Wg4IIhQf-TnRJlancSLdTWIbtjxWE3w/exec"; 
+
 let selectedSeats = [];
-let reservedSeats = []; // 구글 시트에서 받아올 이미 예약된 좌석 목록
+let reservedSeats = []; 
 
-document.addEventListener("DOMContentLoaded", async () => {
-    // 1. 구글 시트로부터 현재 예약 완료된 좌석 리스트 조회
-    try {
-        const response = await fetch(GAS_URL);
-        const data = await response.json();
-        reservedSeats = data.reservedSeats || [];
-    } catch (error) {
-        console.error("예약 데이터를 불러오는데 실패했습니다.", error);
-    }
-
-    // 2. seats.json 기반으로 배치도 그리기
-    fetch("seats.json")
-        .then(res => res.json())
-        .then(data => {
-            renderFloor("floor1", data.floor1);
-            renderFloor("floor2", data.floor2);
-        });
-
-    // 3. 예약 확정 버튼 이벤트 연결
-    document.getElementById("submitBtn").addEventListener("click", submitReservation);
+// 초기 구동
+document.addEventListener("DOMContentLoaded", () => {
+    fetchReservedSeats();
+    setupBookingForm();
 });
 
-// 배치도 렌더링 함수
-// 배치도 렌더링 함수 (기존 함수를 이것으로 교체해 주세요)
+// 1. 구글 시트에서 예약 완료된 좌석 가져오기
+function fetchReservedSeats() {
+    fetch(GAS_URL)
+        .then(response => response.json())
+        .then(data => {
+            reservedSeats = data;
+            loadSeatLayout(); // 예약 내역 받은 후 배치도 로드
+        })
+        .catch(err => {
+            console.error("좌석 정보를 불러오지 못했습니다.", err);
+            loadSeatLayout(); // 에러 시에도 기본 배치도는 로드
+        });
+}
+
+// 2. seats.json 읽어서 화면에 배치도 렌더링
+function loadSeatLayout() {
+    fetch("seats.json")
+        .then(response => response.json())
+        .then(data => {
+            // 1층만 렌더링하도록 변경
+            renderFloor("floor1", data.floor1);
+        });
+}
+
+// 3. 배치도 렌더링 코어 함수
 function renderFloor(containerId, rowsData) {
     const container = document.getElementById(containerId);
+    container.innerHTML = ""; // 초기화
     
     rowsData.forEach(rowData => {
         const rowDiv = document.createElement("div");
@@ -41,28 +50,30 @@ function renderFloor(containerId, rowsData) {
         const seatsRow = document.createElement("div");
         seatsRow.className = "seats-row";
 
-        // 1번부터 30번까지 순서대로 판단하면서 배치
         const maxSeatNum = 30; 
         for (let i = 1; i <= maxSeatNum; i++) {
-            const seatId = `${containerId === 'floor1' ? '1층' : '2층'}-${rowData.row}-${i}`;
+            const seatId = `1층-${rowData.row}-${i}`; // 1층 전용 네이밍 고정
             
-            // 1. 시야 방해석(검은색) 체크
+            // 시야 방해석(검은색 비활성화) 체크
             if (rowData.obstructed && rowData.obstructed.includes(i)) {
-                createSpecialButton(seatsRow, i, "reserved", true); // 클릭 불가능한 검은색 칸
+                createSpecialButton(seatsRow, i, "reserved", true);
             }
-            // 2. 장애인석(휠체어) 체크
+            // 장애인석(휠체어) 체크
             else if (rowData.disabled && rowData.disabled.includes(i)) {
-                createSeatButton(seatsRow, seatId, "♿", true);
+                // 이미 예약된 장애인석인지 검사
+                const isReserved = reservedSeats.includes(seatId);
+                createSeatButton(seatsRow, seatId, "♿", isReserved, "wheelchair");
             }
-            // 3. 일반 예매 가능 좌석 체크
+            // 일반 예매 가능 좌석 체크
             else if (rowData.seats.includes(i)) {
-                createSeatButton(seatsRow, seatId, i, false);
+                const isReserved = reservedSeats.includes(seatId);
+                createSeatButton(seatsRow, seatId, i, isReserved, "available");
             }
-            // 4. 아예 통로나 빈 공간인 경우 (공백 메우기용)
+            // 통로 및 공백 공간 처리
             else {
                 const emptySpace = document.createElement("div");
-                emptySpace.style.width = "24px";
-                emptySpace.style.height = "24px";
+                emptySpace.style.width = "25px";
+                emptySpace.style.height = "25px";
                 seatsRow.appendChild(emptySpace);
             }
         }
@@ -72,7 +83,7 @@ function renderFloor(containerId, rowsData) {
     });
 }
 
-// 시야방해석 전용 비활성화 버튼 생성 함수
+// 시야방해석 전용 생성기
 function createSpecialButton(targetRow, label, className, isDisabled) {
     const btn = document.createElement("button");
     btn.className = `seat ${className}`;
@@ -81,91 +92,102 @@ function createSpecialButton(targetRow, label, className, isDisabled) {
     targetRow.appendChild(btn);
 }
 
-// 개별 좌석 버튼 생성 및 이벤트 부여
-function createSeatButton(targetRow, seatId, label, isWheelchair) {
+// 좌석 선택/예약 제어 버튼 생성기
+function createSeatButton(targetRow, seatId, label, isReserved, baseClass) {
     const btn = document.createElement("button");
-    btn.className = "seat " + (isWheelchair ? "wheelchair" : "available");
-    btn.innerText = label;
-    btn.setAttribute("data-id", seatId);
-
-    // 이미 예약된 좌석 처리
-    if (reservedSeats.includes(seatId)) {
+    btn.id = seatId;
+    
+    if (isReserved) {
         btn.className = "seat reserved";
         btn.disabled = true;
     } else {
-        // 클릭 이벤트 (5매 제한 핵심 로직)
+        btn.className = `seat ${baseClass}`;
+    }
+    
+    btn.innerText = label;
+    
+    if (!isReserved) {
         btn.addEventListener("click", () => handleSeatClick(btn, seatId));
     }
-
+    
     targetRow.appendChild(btn);
 }
 
-// 좌석 클릭 시 토글 및 5매 제한 체크
+// 좌석 클릭 이벤트
 function handleSeatClick(btn, seatId) {
     if (btn.classList.contains("selected")) {
-        // 이미 선택한 좌석 해제
         btn.classList.remove("selected");
-        selectedSeats = selectedSeats.filter(id => id !== seatId);
+        selectedSeats = selectedSeats.filter(s => s !== seatId);
     } else {
-        // 인당 최대 5매 제한 체크!!
         if (selectedSeats.length >= 5) {
-            alert("좌석은 인당 최대 5매까지만 선택할 수 있습니다.");
+            alert("좌석은 최대 5개까지 선택할 수 있습니다.");
             return;
         }
-        // 좌석 선택 추가
         btn.classList.add("selected");
         selectedSeats.push(seatId);
     }
-
-    // UI 업데이트
-    document.getElementById("selectedSeatsDisplay").innerText = selectedSeats.length > 0 ? selectedSeats.join(", ") : "없음";
-    document.getElementById("ticketCount").innerText = selectedSeats.length;
+    updateSummary();
 }
 
-// 예약 데이터 전송
-async function submitReservation() {
-    const name = document.getElementById("name").value.trim();
-    const phone = document.getElementById("phone").value.trim();
-
-    if (!name || !phone) {
-        alert("이름과 연락처를 입력해주세요.");
-        return;
-    }
+// 요약창 정보 실시간 업데이트
+function updateSummary() {
+    const display = document.getElementById("selectedSeatsDisplay");
+    const count = document.getElementById("ticketCount");
+    
     if (selectedSeats.length === 0) {
-        alert("최소 1개 이상의 좌석을 선택해주세요.");
-        return;
+        display.innerText = "없음";
+    } else {
+        display.innerText = selectedSeats.map(s => s.replace("1층-", "")).join(", ");
     }
+    count.innerText = selectedSeats.length;
+}
 
-    const payload = {
-        name: name,
-        phone: phone,
-        quantity: selectedSeats.length,
-        seats: selectedSeats.join(",")
-    };
-
-    // 버튼 임시 비활성화 (중복 클릭 방지)
+// 폼 세팅 및 예매 데이터 구글 전송(POST)
+function setupBookingForm() {
     const submitBtn = document.getElementById("submitBtn");
-    submitBtn.disabled = true;
-    submitBtn.innerText = "예약 처리 중...";
-
-    try {
-        const response = await fetch(GAS_URL, {
+    
+    submitBtn.addEventListener("click", () => {
+        const name = document.getElementById("name").value.trim();
+        const phone = document.getElementById("phone").value.trim();
+        
+        if (!name || !phone) {
+            alert("예매자 이름과 연락처를 입력해 주세요.");
+            return;
+        }
+        if (selectedSeats.length === 0) {
+            alert("좌석을 하나 이상 선택해 주세요.");
+            return;
+        }
+        
+        submitBtn.disabled = true;
+        submitBtn.innerText = "예약 처리 중...";
+        
+        const payload = {
+            name: name,
+            phone: phone,
+            seats: selectedSeats.join(",")
+        };
+        
+        fetch(GAS_URL, {
             method: "POST",
             body: JSON.stringify(payload)
-        });
-        const resultData = await response.json();
-
-        if (resultData.result === "success") {
-            alert(`예약이 성공적으로 완료되었습니다! (${selectedSeats.length}매)`);
-            location.reload(); // 성공 시 새로고침하여 좌석 현황 최신화
-        } else {
-            alert("예약 중 오류가 발생했습니다: " + resultData.message);
+        })
+        .then(res => res.json())
+        .then(result => {
+            if (result.result === "success") {
+                alert("예약이 성공적으로 완료되었습니다!");
+                location.reload();
+            } else {
+                alert("예약에 실패했습니다: " + result.message);
+                submitBtn.disabled = false;
+                submitBtn.innerText = "예약 확정하기";
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert("네트워크 통신 오류가 발생했습니다.");
             submitBtn.disabled = false;
             submitBtn.innerText = "예약 확정하기";
-        }
-    } catch (err) {
-        alert("서버 통신 오류가 발생했습니다.");
-        submitBtn.disabled = false;
-        submitBtn.innerText = "예약 확정하기";
-    }
+        });
+    });
 }
