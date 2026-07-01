@@ -1,254 +1,30 @@
-*{
-
-margin:0;
-padding:0;
-box-sizing:border-box;
-
-font-family:Pretendard,sans-serif;
-
-}
-
-body{
-
-background:#f5f7fb;
-
-}
-
-header{
-
-background:white;
-
-padding:30px;
-
-box-shadow:0 2px 10px rgba(0,0,0,.08);
-
-}
-
-header h1{
-
-font-size:32px;
-
-}
-
-.container{
-
-max-width:1300px;
-
-margin:auto;
-
-padding:40px;
-
-}
-
-.info{
-
-display:flex;
-
-gap:15px;
-
-margin-bottom:30px;
-
-}
-
-.info input,
-.info select{
-
-padding:12px;
-
-font-size:16px;
-
-border-radius:8px;
-
-border:1px solid #ddd;
-
-}
-
-.legend{
-
-display:flex;
-
-gap:25px;
-
-margin-bottom:30px;
-
-}
-
-.legend div{
-
-display:flex;
-
-align-items:center;
-
-gap:8px;
-
-}
-
-.seat{
-
-width:28px;
-
-height:28px;
-
-border-radius:6px;
-
-display:flex;
-
-justify-content:center;
-
-align-items:center;
-
-font-size:14px;
-
-font-weight:bold;
-
-}
-
-.available{
-
-background:#FFD54F;
-
-}
-
-.selected{
-
-background:#4CAF50;
-
-}
-
-.reserved{
-
-background:#E53935;
-
-}
-
-.disabled{
-
-background:#333;
-
-}
-
-.wheelchair{
-
-background:#1565C0;
-
-color:white;
-
-}
-
-.row{
-
-display:flex;
-
-align-items:center;
-
-margin:8px 0;
-
-}
-
-.rowLabel{
-
-width:70px;
-
-font-weight:600;
-
-}
-
-.seatItem{
-
-width:34px;
-
-height:34px;
-
-margin:3px;
-
-display:flex;
-
-justify-content:center;
-
-align-items:center;
-
-border-radius:6px;
-
-cursor:pointer;
-
-background:#FFD54F;
-
-transition:.2s;
-
-}
-
-.seatItem:hover{
-
-transform:scale(1.1);
-
-}
-
-.selectedSeat{
-
-background:#4CAF50;
-
-color:white;
-
-}
-
-.reservedSeat{
-
-background:#E53935;
-
-color:white;
-
-pointer-events:none;
-
-}
-
-.empty{
-
-background:#222;
-
-cursor:default;
-
-}
-
-.bottom{
-
-position:sticky;
-
-bottom:0;
-
-background:white;
-
-padding:20px;
-
-margin-top:30px;
-
-border-radius:12px;
-
-box-shadow:0 0 15px rgba(0,0,0,.15);
-
-}
-
-button{
-
-padding:14px 30px;
-
-border:none;
-
-background:#1976D2;
-
-color:white;
-
-font-size:18px;
-
-border-radius:10px;
-
-cursor:pointer;
-
-margin-top:15px;
-
-}
-
-button:hover{
-
-background:#0d47a1;
-
-}
+body { font-family: 'Malgun Gothic', sans-serif; background-color: #f8f9fa; color: #333; margin: 0; padding: 20px; }
+.container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+h1, h3 { text-align: center; }
+
+/* 폼 스타일 */
+.form-section { background: #f1f3f5; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+.input-group { margin-bottom: 12px; }
+.input-group label { display: inline-block; width: 60px; font-weight: bold; }
+.input-group input { padding: 8px; width: 200px; border: 1px solid #ced4da; border-radius: 4px; }
+.info-group p { margin: 5px 0; }
+.btn-submit { display: block; width: 100%; padding: 12px; background: #228be6; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; }
+.btn-submit:hover { background: #1c7ed6; }
+
+/* 범례 및 무대 */
+.legend { text-align: center; margin-bottom: 20px; }
+.legend-item { margin: 0 10px; font-size: 14px; }
+.box { display: inline-block; width: 16px; height: 16px; vertical-align: middle; margin-right: 4px; border-radius: 3px; }
+.stage { background: #343a40; color: white; text-align: center; padding: 10px; font-weight: bold; border-radius: 4px; margin: 20px auto 40px; max-width: 400px; }
+
+/* 좌석 배치도 디자인 */
+.floor { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.row-container { display: flex; align-items: center; width: 100%; max-width: 500px; }
+.row-label { width: 50px; font-weight: bold; font-size: 14px; }
+.seats-row { display: flex; gap: 4px; flex-grow: 1; }
+
+.seat { width: 32px; height: 32px; border: 1px solid #adb5bd; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.available { background-color: #a3e4d7; color: #117a65; }
+.selected { background-color: #f1c40f; color: #7d6608; border-color: #d4ac0d; }
+.reserved { background-color: #e9ecef; color: #adb5bd; border-color: #dee2e6; cursor: not-allowed; }
+.wheelchair { background-color: #f1948a; color: #922b21; border-color: #ec7063; }
