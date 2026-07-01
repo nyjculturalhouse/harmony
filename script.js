@@ -1,171 +1,149 @@
-// ===============================
-// 최대 선택 가능 좌석
-// ===============================
-const MAX_SELECT = 5;
-
-// 현재 선택 좌석
+const GAS_URL = "여기에_복사한_구글_웹앱_URL을_넣으세요"; 
 let selectedSeats = [];
+let reservedSeats = []; // 구글 시트에서 받아올 이미 예약된 좌석 목록
 
-// ===============================
-// 1층 좌석
-// start : 시작 번호
-// end   : 끝 번호
-// ===============================
+document.addEventListener("DOMContentLoaded", async () => {
+    // 1. 구글 시트로부터 현재 예약 완료된 좌석 리스트 조회
+    try {
+        const response = await fetch(GAS_URL);
+        const data = await response.json();
+        reservedSeats = data.reservedSeats || [];
+    } catch (error) {
+        console.error("예약 데이터를 불러오는데 실패했습니다.", error);
+    }
 
-const floor1 = [
+    // 2. seats.json 기반으로 배치도 그리기
+    fetch("seats.json")
+        .then(res => res.json())
+        .then(data => {
+            renderFloor("floor1", data.floor1);
+            renderFloor("floor2", data.floor2);
+        });
 
-    {row:1,start:5,end:9},
+    // 3. 예약 확정 버튼 이벤트 연결
+    document.getElementById("submitBtn").addEventListener("click", submitReservation);
+});
 
-    {row:2,start:3,end:9},
+// 배치도 렌더링 함수
+function renderFloor(containerId, rowsData) {
+    const container = document.getElementById(containerId);
+    
+    rowsData.forEach(rowData => {
+        const rowDiv = document.createElement("div");
+        rowDiv.className = "row-container";
 
-    {row:3,start:3,end:9},
+        const label = document.createElement("div");
+        label.className = "row-label";
+        label.innerText = rowData.row;
+        rowDiv.appendChild(label);
 
-    {row:4,start:1,end:10},
+        const seatsRow = document.createElement("div");
+        seatsRow.className = "seats-row";
 
-    {row:5,start:1,end:10},
+        // 일반석 배치
+        rowData.seats.forEach(seatNum => {
+            const seatId = `${containerId === 'floor1' ? '1층' : '2층'}-${rowData.row}-${seatNum}`;
+            createSeatButton(seatsRow, seatId, seatNum, false);
+        });
 
-    {row:6,start:1,end:10},
-
-    {row:7,start:1,end:8},
-
-    {row:8,start:1,end:10},
-
-    {row:9,start:1,end:10},
-
-    {row:10,start:1,end:10},
-
-    {row:11,start:1,end:10},
-
-    {row:12,start:1,end:10}
-
-];
-
-
-// ===============================
-// 2층
-// ===============================
-
-const floor2 = [
-
-    {row:1,start:null,end:null},
-
-    {row:2,start:1,end:10},
-
-    {row:3,start:1,end:10},
-
-    {row:4,start:1,end:10}
-
-];
-
-function drawFloor(data,targetId,floor){
-
-    const target=document.getElementById(targetId);
-
-    target.innerHTML="";
-
-    data.forEach(r=>{
-
-        const row=document.createElement("div");
-
-        row.className="row";
-
-        const label=document.createElement("div");
-
-        label.className="rowLabel";
-
-        label.innerHTML=r.row+"열";
-
-        row.appendChild(label);
-
-        for(let i=1;i<=10;i++){
-
-            const seat=document.createElement("div");
-
-            // 없는 좌석
-            if(r.start===null){
-
-                seat.className="seatItem empty";
-
-            }
-
-            else if(i<r.start || i>r.end){
-
-                seat.className="seatItem empty";
-
-            }
-
-            else{
-
-                seat.className="seatItem";
-
-                seat.innerHTML=i;
-
-                seat.dataset.id=`${floor}-${r.row}-${i}`;
-
-                seat.onclick=()=>selectSeat(seat);
-
-            }
-
-            row.appendChild(seat);
-
+        // 장애인석 등 특별석 배치
+        if (rowData.special) {
+            rowData.special.forEach(sp => {
+                const seatId = `${containerId === 'floor1' ? '1층' : '2층'}-${rowData.row}-${sp.id}`;
+                createSeatButton(seatsRow, seatId, sp.label, true);
+            });
         }
 
-        target.appendChild(row);
-
+        rowDiv.appendChild(seatsRow);
+        container.appendChild(rowDiv);
     });
-
 }
 
-function selectSeat(seat){
+// 개별 좌석 버튼 생성 및 이벤트 부여
+function createSeatButton(targetRow, seatId, label, isWheelchair) {
+    const btn = document.createElement("button");
+    btn.className = "seat " + (isWheelchair ? "wheelchair" : "available");
+    btn.innerText = label;
+    btn.setAttribute("data-id", seatId);
 
-    const count=parseInt(document.getElementById("count").value);
-
-    const id=seat.dataset.id;
-
-    if(seat.classList.contains("selectedSeat")){
-
-        seat.classList.remove("selectedSeat");
-
-        selectedSeats=selectedSeats.filter(x=>x!==id);
-
+    // 이미 예약된 좌석 처리
+    if (reservedSeats.includes(seatId)) {
+        btn.className = "seat reserved";
+        btn.disabled = true;
+    } else {
+        // 클릭 이벤트 (5매 제한 핵심 로직)
+        btn.addEventListener("click", () => handleSeatClick(btn, seatId));
     }
 
-    else{
+    targetRow.appendChild(btn);
+}
 
-        if(selectedSeats.length>=count){
-
-            alert("예매수량만큼만 선택 가능합니다.");
-
+// 좌석 클릭 시 토글 및 5매 제한 체크
+function handleSeatClick(btn, seatId) {
+    if (btn.classList.contains("selected")) {
+        // 이미 선택한 좌석 해제
+        btn.classList.remove("selected");
+        selectedSeats = selectedSeats.filter(id => id !== seatId);
+    } else {
+        // 인당 최대 5매 제한 체크!!
+        if (selectedSeats.length >= 5) {
+            alert("좌석은 인당 최대 5매까지만 선택할 수 있습니다.");
             return;
-
         }
-
-        seat.classList.add("selectedSeat");
-
-        selectedSeats.push(id);
-
+        // 좌석 선택 추가
+        btn.classList.add("selected");
+        selectedSeats.push(seatId);
     }
 
-    updateSelected();
-
+    // UI 업데이트
+    document.getElementById("selectedSeatsDisplay").innerText = selectedSeats.length > 0 ? selectedSeats.join(", ") : "없음";
+    document.getElementById("ticketCount").innerText = selectedSeats.length;
 }
 
-function updateSelected(){
+// 예약 데이터 전송
+async function submitReservation() {
+    const name = document.getElementById("name").value.trim();
+    const phone = document.getElementById("phone").value.trim();
 
-    const div=document.getElementById("selectedSeats");
-
-    if(selectedSeats.length===0){
-
-        div.innerHTML="없음";
-
+    if (!name || !phone) {
+        alert("이름과 연락처를 입력해주세요.");
         return;
-
+    }
+    if (selectedSeats.length === 0) {
+        alert("최소 1개 이상의 좌석을 선택해주세요.");
+        return;
     }
 
-    div.innerHTML=selectedSeats.join("<br>");
+    const payload = {
+        name: name,
+        phone: phone,
+        quantity: selectedSeats.length,
+        seats: selectedSeats.join(",")
+    };
 
+    // 버튼 임시 비활성화 (중복 클릭 방지)
+    const submitBtn = document.getElementById("submitBtn");
+    submitBtn.disabled = true;
+    submitBtn.innerText = "예약 처리 중...";
+
+    try {
+        const response = await fetch(GAS_URL, {
+            method: "POST",
+            body: JSON.stringify(payload)
+        });
+        const resultData = await response.json();
+
+        if (resultData.result === "success") {
+            alert(`예약이 성공적으로 완료되었습니다! (${selectedSeats.length}매)`);
+            location.reload(); // 성공 시 새로고침하여 좌석 현황 최신화
+        } else {
+            alert("예약 중 오류가 발생했습니다: " + resultData.message);
+            submitBtn.disabled = false;
+            submitBtn.innerText = "예약 확정하기";
+        }
+    } catch (err) {
+        alert("서버 통신 오류가 발생했습니다.");
+        submitBtn.disabled = false;
+        submitBtn.innerText = "예약 확정하기";
+    }
 }
-
-drawFloor(floor1,"floor1","1층");
-
-drawFloor(floor2,"floor2","2층");
