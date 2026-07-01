@@ -63,7 +63,6 @@ function renderFloor(containerId, rowsData) {
             const currentSeatCleaned = seatId.replace(/[-_\s]/g, "").trim();
             
             const seatCell = document.createElement("div");
-            // [모바일 적응형 수정] 인라인 고정 width/height를 제거하고 CSS 클래스로 위임
             seatCell.className = "seat-cell";
 
             if (rowData.obstructed && rowData.obstructed.includes(i)) {
@@ -85,7 +84,6 @@ function renderFloor(containerId, rowsData) {
 
             if (i === 9 || i === 19) {
                 const aisleSpace = document.createElement("div");
-                // [모바일 적응형 수정] 복도 공간도 비율에 맞추기 위해 인라인 크기 제거 후 클래스 추가
                 aisleSpace.className = "aisle-space";
                 seatsRow.appendChild(aisleSpace);
             }
@@ -211,7 +209,6 @@ function renderModalFloor(rowsData, mySeatsArray) {
             const currentSeatCleaned = seatId.replace(/[-_\s]/g, "").trim();
 
             const seatCell = document.createElement("div");
-            // [모바일 적응형 수정] 인라인 크기를 제거하고 CSS 클래스로 위임
             seatCell.className = "seat-cell";
 
             const btn = document.createElement("button");
@@ -243,7 +240,6 @@ function renderModalFloor(rowsData, mySeatsArray) {
 
             if (i === 9 || i === 19) {
                 const aisleSpace = document.createElement("div");
-                // [모바일 적응형 수정] 복도 공간도 인라인 제거 후 클래스 추가
                 aisleSpace.className = "aisle-space";
                 seatsRow.appendChild(aisleSpace);
             }
@@ -272,7 +268,6 @@ function setupBookingForm() {
         }
     });
 
-    // 🔍 [수정] 예약 확인하기 버튼 실시간 대조 연동 로직
     checkBtn.addEventListener("click", () => {
         const name = document.getElementById("name").value.trim();
         const phone = phoneInput.value.trim();
@@ -300,19 +295,13 @@ function setupBookingForm() {
             fetch("seats.json")
                 .then(res => res.json())
                 .then(seatData => {
-                    
-                    // 1. 구글 시트에 예약된 좌석 내역이 존재하는 경우
                     if (result.result === "success" && result.seats) {
                         const userSeats = result.seats.split(",").map(s => s.trim());
-                        
-                        // 아무 메시지 없이 바로 모달 띄우기
                         document.getElementById("modalUserTitle").innerText = `${name}님의 예약 확인 결과 (노란색 표시)`;
                         renderModalFloor(seatData.floor1, userSeats);
                         document.getElementById("checkModal").classList.add("active");
                     } 
-                    // 2. 예약 내역이 매칭되지 않거나 없는 경우
                     else {
-                        // 모달을 띄우지 않고 알림창만 표시
                         alert("입력하신 정보로 등록된 예약 내역이 없습니다.");
                     }
                     
