@@ -44,6 +44,11 @@ function renderFloor(containerId, rowsData) {
     // 혹시라도 reservedSeats가 배열이 아닐 경우를 대비한 2중 안전장치
     const safeReservedSeats = Array.isArray(reservedSeats) ? reservedSeats : [];
     
+    // [수정] 구글 시트 예약 데이터들의 공백/하이픈을 제거하여 정밀 매칭을 준비합니다.
+    const cleanedReservedSeats = safeReservedSeats.map(seat => 
+        String(seat).replace(/[-_\s]/g, "").trim()
+    );
+    
     rowsData.forEach(rowData => {
         const rowDiv = document.createElement("div");
         rowDiv.className = "row-container";
@@ -59,7 +64,11 @@ function renderFloor(containerId, rowsData) {
         // 다산아트홀 1층 구조 기준 가로 최대 30칸 생성하며 맵 분석
         const maxSeatNum = 30; 
         for (let i = 1; i <= maxSeatNum; i++) {
-            const seatId = `1층-${rowData.row}-${i}`; // 1층 전용 네이밍 고정
+            // [수정] '1층-' 접두사를 완전히 제거하고 좌석 ID를 생성합니다.
+            const seatId = `${rowData.row}-${i}`; 
+            
+            // 비교 대상 현재 좌석도 문자열을 정제합니다. (예: "1열5")
+            const currentSeatCleaned = seatId.replace(/[-_\s]/g, "").trim();
             
             // ① 시야 방해석(검은박스 비활성화) 체크
             if (rowData.obstructed && rowData.obstructed.includes(i)) {
@@ -67,12 +76,14 @@ function renderFloor(containerId, rowsData) {
             }
             // ② 장애인석(휠체어석) 체크
             else if (rowData.disabled && rowData.disabled.includes(i)) {
-                const isReserved = safeReservedSeats.includes(seatId);
+                // [수정] 정제된 비교 배열을 이용하여 예약을 확실하게 잡아냅니다.
+                const isReserved = cleanedReservedSeats.includes(currentSeatCleaned);
                 createSeatButton(seatsRow, seatId, "♿", isReserved, "wheelchair");
             }
             // ③ 일반 예매 가능 좌석 체크
             else if (rowData.seats && rowData.seats.includes(i)) {
-                const isReserved = safeReservedSeats.includes(seatId);
+                // [수정] 정제된 비교 배열을 이용하여 예약을 확실하게 잡아냅니다.
+                const isReserved = cleanedReservedSeats.includes(currentSeatCleaned);
                 createSeatButton(seatsRow, seatId, i, isReserved, "available");
             }
             // ④ 통로 및 공백 공간 처리 (가로 비율 균등 유지)
@@ -143,7 +154,8 @@ function updateSummary() {
     if (selectedSeats.length === 0) {
         display.innerText = "없음";
     } else {
-        display.innerText = selectedSeats.map(s => s.replace("1층-", "")).join(", ");
+        // [수정] 더 이상 '1층-' 접두사가 생성되지 않으므로 별도의 replace 없이 깔끔하게 조인합니다.
+        display.innerText = selectedSeats.join(", ");
     }
     count.innerText = selectedSeats.length;
 }
@@ -172,7 +184,7 @@ function setupBookingForm() {
         let phone = phoneInput.value.trim();
         
         if (!name || !phone) {
-            alert("예매자 이름과 연락처를 입력해 주세요.");
+            alert("예매자 이름 and 연락처를 입력해 주세요.");
             return;
         }
 
