@@ -28,12 +28,12 @@ function loadSeatLayout() {
     fetch("seats.json")
         .then(response => response.json())
         .then(data => {
-            // 1층만 렌더링하도록 변경
+            // 1층만 렌더링하도록 설정
             renderFloor("floor1", data.floor1);
         });
 }
 
-// [최종 수정] 다산아트홀 실제 좌석 배치 최적화 및 렌더링 에러 완벽 해결
+// 3. 배치도 렌더링 코어 함수 (다산아트홀 실제 1~30번 도면 매핑 구조)
 function renderFloor(containerId, rowsData) {
     const container = document.getElementById(containerId);
     if (!container) return;
@@ -51,26 +51,26 @@ function renderFloor(containerId, rowsData) {
         const seatsRow = document.createElement("div");
         seatsRow.className = "seats-row";
 
-        // 다산아트홀 1층은 한 줄에 최대 30번까지 배치되어 있습니다.
+        // 다산아트홀 1층 구조 기준 가로 최대 30칸 생성하며 맵 분석
         const maxSeatNum = 30; 
         for (let i = 1; i <= maxSeatNum; i++) {
             const seatId = `1층-${rowData.row}-${i}`; // 1층 전용 네이밍 고정
             
-            // 1. 시야 방해석 체크 (obstructed 배열에 포함되어 있다면 비활성화 좌석으로 렌더링)
+            // ① 시야 방해석(검은박스 비활성화) 체크
             if (rowData.obstructed && rowData.obstructed.includes(i)) {
                 createSpecialButton(seatsRow, i, "reserved", true);
             }
-            // 2. 장애인석(휠체어석) 체크 (disabled 배열에 포함되어 있다면 ♿ 표시로 렌더링)
+            // ② 장애인석(휠체어석) 체크
             else if (rowData.disabled && rowData.disabled.includes(i)) {
                 const isReserved = reservedSeats.includes(seatId);
                 createSeatButton(seatsRow, seatId, "♿", isReserved, "wheelchair");
             }
-            // 3. 일반 예매 가능 좌석 체크 (seats 배열에 명시되어 있다면 정상 렌더링)
+            // ③ 일반 예매 가능 좌석 체크
             else if (rowData.seats && rowData.seats.includes(i)) {
                 const isReserved = reservedSeats.includes(seatId);
                 createSeatButton(seatsRow, seatId, i, isReserved, "available");
             }
-            // 4. 통로 및 완전히 비어있는 공백 공간 처리 (가로 비율 유지를 위해 빈 공간 삽입)
+            // ④ 통로 및 공백 공간 처리 (가로 비율 균등 유지)
             else {
                 const emptySpace = document.createElement("div");
                 emptySpace.style.width = "25px";
@@ -114,13 +114,12 @@ function createSeatButton(targetRow, seatId, label, isReserved, baseClass) {
     targetRow.appendChild(btn);
 }
 
-// 좌석 클릭 이벤트
+// 좌석 클릭 이벤트 (최대 5개 선택 제한 포함)
 function handleSeatClick(btn, seatId) {
     if (btn.classList.contains("selected")) {
         btn.classList.remove("selected");
         selectedSeats = selectedSeats.filter(s => s !== seatId);
     } else {
-        // 이미 5개가 선택된 상태에서 추가 선택을 시도할 때 차단
         if (selectedSeats.length >= 5) {
             alert("좌석은 최대 5개까지 선택할 수 있습니다.");
             return;
@@ -131,8 +130,7 @@ function handleSeatClick(btn, seatId) {
     updateSummary();
 }
 
-// 요약창 정보 실시간 업데이트
-// [수정] 요약창 정보 및 예매 수량(최대 5개 기준) 실시간 업데이트
+// 요약창 정보 및 예매 수량 실시간 업데이트
 function updateSummary() {
     const display = document.getElementById("selectedSeatsDisplay");
     const count = document.getElementById("ticketCount");
@@ -142,16 +140,15 @@ function updateSummary() {
     } else {
         display.innerText = selectedSeats.map(s => s.replace("1층-", "")).join(", ");
     }
-    // 현재 선택한 개수를 화면의 수량 데이터 엘리먼트에 바인딩
     count.innerText = selectedSeats.length;
 }
 
-// [수정] 폼 세팅, 연락처 자동 하이픈 기능 및 예매 데이터 구글 전송
+// 폼 세팅, 연락처 자동 하이픈 기능 및 예매 데이터 구글 전송
 function setupBookingForm() {
     const submitBtn = document.getElementById("submitBtn");
     const phoneInput = document.getElementById("phone");
 
-    // 연락처 입력 시 자동 하이픈 추가 이벤트 listen
+    // 연락처 입력 시 숫자만 필터링 후 자동 하이픈 대입
     phoneInput.addEventListener("input", (e) => {
         let value = e.target.value.replace(/[^0-9]/g, ""); // 숫자만 남기기
         if (value.length > 11) value = value.substring(0, 11); // 최대 11자리 제한
@@ -174,7 +171,7 @@ function setupBookingForm() {
             return;
         }
 
-        // 숫자가 도중에 누락되어 하이픈 포맷이 안 맞거나 길이가 짧은 경우 강제 보정 후 시트 전송 준비
+        // 하이픈 포맷 유효성 강제 재확인 및 보정 후 전송 데이터 준비
         const pureNumbers = phone.replace(/[^0-9]/g, "");
         if (pureNumbers.length === 11) {
             phone = `${pureNumbers.substring(0, 3)}-${pureNumbers.substring(3, 7)}-${pureNumbers.substring(7)}`;
@@ -192,7 +189,7 @@ function setupBookingForm() {
         
         const payload = {
             name: name,
-            phone: phone, // 하이픈이 완벽히 포함된 포맷으로 시트에 저장됩니다.
+            phone: phone, // 구글 시트에 010-XXXX-XXXX 형태로 예쁘게 보관됩니다.
             seats: selectedSeats.join(",")
         };
         
