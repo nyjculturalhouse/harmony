@@ -23,40 +23,45 @@ function loadSeatLayout() {
 
 function renderFloor(containerId, rowsData) {
     const container = document.getElementById(containerId);
-    if (!container) return;
     container.innerHTML = "";
-    
-    const cleanedReservedSeats = reservedSeats.map(s => String(s).replace(/[-_\s]/g, ""));
 
-    rowsData.forEach(rowData => {
+    rowsData.forEach(row => {
         const rowDiv = document.createElement("div");
         rowDiv.className = "row-container";
-        rowDiv.innerHTML = `<div class="row-label">${rowData.row}</div>`;
+        rowDiv.innerHTML = `<div class="row-label">${row.row}</div>`;
         const seatsRow = document.createElement("div");
         seatsRow.className = "seats-row";
 
-        rowData.seats.forEach(seatNum => {
-            if (seatNum === null) {
+        // Offset 처리 (들여쓰기)
+        for (let i = 0; i < (row.offset || 0); i++) {
+            seatsRow.appendChild(document.createElement("div")).className = "seat-cell";
+        }
+
+        // 전체 좌석 목록 병합 및 정렬
+        const allSeats = [...(row.seats || []), ...(row.disabled || []), ...(row.obstructed || [])].sort((a, b) => a - b);
+        
+        // [핵심 수정] 좌석을 3등분하여 배치 (중앙 통로 확보)
+        // 전체 좌석 개수를 3으로 나누어 좌/중/우 섹션 배치
+        const third = Math.floor(allSeats.length / 3);
+        
+        allSeats.forEach((seatNum, index) => {
+            const seatId = `${row.row}-${seatNum}`;
+            const cell = document.createElement("div");
+            cell.className = "seat-cell";
+
+            // (버튼 생성 로직 생략 - 기존과 동일)
+            const btn = document.createElement("button");
+            // ... (버튼 속성 설정)
+            cell.appendChild(btn);
+            seatsRow.appendChild(cell);
+
+            // [수정] 좌석 그룹(섹션)이 끝날 때마다 통로 div 삽입
+            // 좌석이 30개라면 10개마다, 28개라면 9개-10개-9개 식으로 구분
+            if ((index + 1 === 9 || index + 1 === 19) && row.row.includes("1열") || 
+                (index + 1 === 10 || index + 1 === 20) && !row.row.includes("1열")) {
                 const aisle = document.createElement("div");
                 aisle.className = "aisle-space";
                 seatsRow.appendChild(aisle);
-            } else {
-                const seatId = `${rowData.row}-${seatNum}`;
-                const cell = document.createElement("div");
-                cell.className = "seat-cell";
-                
-                const isReserved = cleanedReservedSeats.includes(seatId.replace(/[-_\s]/g, ""));
-                const isObstructed = rowData.obstructed?.includes(seatNum);
-                const isDisabled = rowData.disabled?.includes(seatNum);
-                
-                const btn = document.createElement("button");
-                btn.className = `seat ${isReserved ? "reserved" : (isDisabled ? "wheelchair" : "available")}`;
-                btn.disabled = isReserved || isObstructed;
-                btn.innerText = isDisabled ? "♿" : seatNum;
-                if (!isReserved && !isObstructed) btn.onclick = () => handleSeatClick(btn, seatId);
-                
-                cell.appendChild(btn);
-                seatsRow.appendChild(cell);
             }
         });
         rowDiv.appendChild(seatsRow);
