@@ -51,11 +51,11 @@ function renderFloor(containerId, rowsData) {
             seatsRow.appendChild(document.createElement("div")).className = "seat-cell";
         }
 
-        // 수정: Set을 사용하여 중복 제거
         const allSeats = Array.from(new Set([...(rowData.seats || []), ...(rowData.disabled || []), ...(rowData.obstructed || [])])).sort((a, b) => a - b);
         const rowNum = parseInt(rowData.row.replace(/[^0-9]/g, ""));
 
-        allSeats.forEach(seatNum => {
+        // [수정] index 파라미터 추가
+        allSeats.forEach((seatNum, index) => {
             const seatId = `${rowData.row}-${seatNum}`;
             const currentSeatCleaned = seatId.replace(/[-_\s]/g, "").trim();
             const seatCell = document.createElement("div");
@@ -70,7 +70,8 @@ function renderFloor(containerId, rowsData) {
             }
             seatsRow.appendChild(seatCell);
 
-            let aisleCondition = (rowNum <= 3) ? (seatNum === 9 || seatNum === 19) : (seatNum === 10 || seatNum === 20);
+            // [수정] index 기반 통로 배치 (1~3열은 9번째/19번째 좌석 뒤, 4열부터는 10번째/20번째 좌석 뒤)
+            let aisleCondition = (rowNum <= 3) ? (index === 8 || index === 18) : (index === 9 || index === 19);
             if (aisleCondition) {
                 const aisleSpace = document.createElement("div");
                 aisleSpace.className = "aisle-space";
@@ -159,11 +160,11 @@ function renderModalFloor(rowsData, mySeatsArray) {
             seatsRow.appendChild(document.createElement("div")).className = "seat-cell";
         }
 
-        // 수정: Set을 사용하여 중복 제거
         const allSeats = Array.from(new Set([...(rowData.seats || []), ...(rowData.disabled || []), ...(rowData.obstructed || [])])).sort((a, b) => a - b);
         const rowNum = parseInt(rowData.row.replace(/[^0-9]/g, ""));
 
-        allSeats.forEach(seatNum => {
+        // [수정] index 파라미터 추가
+        allSeats.forEach((seatNum, index) => {
             const seatId = `${rowData.row}-${seatNum}`;
             const currentSeatCleaned = seatId.replace(/[-_\s]/g, "").trim();
             const cell = document.createElement("div");
@@ -180,7 +181,8 @@ function renderModalFloor(rowsData, mySeatsArray) {
             cell.appendChild(btn);
             seatsRow.appendChild(cell);
 
-            let aisleCondition = (rowNum <= 3) ? (seatNum === 9 || seatNum === 19) : (seatNum === 10 || seatNum === 20);
+            // [수정] index 기반 통로 배치
+            let aisleCondition = (rowNum <= 3) ? (index === 8 || index === 18) : (index === 9 || index === 19);
             if (aisleCondition) seatsRow.appendChild(document.createElement("div")).className = "aisle-space";
         });
         rowDiv.appendChild(seatsRow);
