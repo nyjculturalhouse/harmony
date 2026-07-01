@@ -1,4 +1,4 @@
-const GAS_URL = "여기에_복사한_구글_웹앱_URL을_넣으세요"; 
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwEGlst8zJdzKQaQzMxzF7SVwrn9GcFVD24LT8Wg4IIhQf-TnRJlancSLdTWIbtjxWE3w/exec"; 
 let selectedSeats = [];
 let reservedSeats = []; // 구글 시트에서 받아올 이미 예약된 좌석 목록
 
