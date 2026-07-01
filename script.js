@@ -274,7 +274,7 @@ function setupBookingForm() {
         }
     });
 
-    // 🔍 [완성] 예약 확인하기 버튼 실시간 대조 연동 로직
+    // 🔍 [수정] 예약 확인하기 버튼 실시간 대조 연동 로직
     checkBtn.addEventListener("click", () => {
         const name = document.getElementById("name").value.trim();
         const phone = phoneInput.value.trim();
@@ -287,10 +287,8 @@ function setupBookingForm() {
         checkBtn.innerText = "조회 중...";
         checkBtn.disabled = true;
 
-        // 동시성 락 충돌 방지 및 안전 조회를 위해 GAS에 POST로 매칭 요청 전송 
-        // (doGet은 보안상 고정 목록만 주므로 조회용 페이로드를 POST로 식별 요청합니다)
         const checkPayload = {
-            action: "checkReservation", // 조회 모드 식별자
+            action: "checkReservation", 
             name: name,
             phone: phone
         };
@@ -304,26 +302,21 @@ function setupBookingForm() {
             fetch("seats.json")
                 .then(res => res.json())
                 .then(seatData => {
-                    let userSeats = [];
                     
-                    // GAS 측에서 일치하는 예매 좌석 문자열(예: "1열-11, 1열-12")을 보내준 경우 배열 분리
+                    // 1. 구글 시트에 예약된 좌석 내역이 존재하는 경우
                     if (result.result === "success" && result.seats) {
-                        userSeats = result.seats.split(",").map(s => s.trim());
-                    } else {
-                        // 만약 GAS 측에 action 분기 세팅이 안 되어 있다면 현재 프론트 임시 매칭 백업 작동
-                        userSeats = selectedSeats;
+                        const userSeats = result.seats.split(",").map(s => s.trim());
+                        
+                        // 아무 메시지 없이 바로 모달 띄우기
+                        document.getElementById("modalUserTitle").innerText = `${name}님의 예약 확인 결과 (노란색 표시)`;
+                        renderModalFloor(seatData.floor1, userSeats);
+                        document.getElementById("checkModal").classList.add("active");
+                    } 
+                    // 2. 예약 내역이 매칭되지 않거나 없는 경우
+                    else {
+                        // 모달을 띄우지 않고 알림창만 표시
+                        alert("입력하신 정보로 등록된 예약 내역이 없습니다.");
                     }
-
-                    if (userSeats.length === 0) {
-                        alert("입력하신 정보로 등록된 예약 내역이 없거나 선택한 좌석이 없습니다.");
-                        checkBtn.innerText = "예약 확인하기";
-                        checkBtn.disabled = false;
-                        return;
-                    }
-
-                    document.getElementById("modalUserTitle").innerText = `${name}님의 예약 확인 결과 (노란색 표시)`;
-                    renderModalFloor(seatData.floor1, userSeats);
-                    document.getElementById("checkModal").classList.add("active");
                     
                     checkBtn.innerText = "예약 확인하기";
                     checkBtn.disabled = false;
@@ -331,14 +324,9 @@ function setupBookingForm() {
         })
         .catch(err => {
             console.error(err);
-            // 통신 에러 백업: 현재 화면에 선택해둔 좌석이라도 매핑해서 띄워주기
-            fetch("seats.json").then(res => res.json()).then(seatData => {
-                document.getElementById("modalUserTitle").innerText = `${name}님의 선택 좌석 미리보기 (노란색 표시)`;
-                renderModalFloor(seatData.floor1, selectedSeats);
-                document.getElementById("checkModal").classList.add("active");
-                checkBtn.innerText = "예약 확인하기";
-                checkBtn.disabled = false;
-            });
+            alert("조회 중 네트워크 오류가 발생했습니다.");
+            checkBtn.innerText = "예약 확인하기";
+            checkBtn.disabled = false;
         });
     });
     
