@@ -33,9 +33,10 @@ function loadSeatLayout() {
         });
 }
 
-// 3. 배치도 렌더링 코어 함수
+// [수정] 배치도 렌더링 코어 함수 (json 데이터 기반 유연한 렌더링 및 에러 방지)
 function renderFloor(containerId, rowsData) {
     const container = document.getElementById(containerId);
+    if (!container) return;
     container.innerHTML = ""; // 초기화
     
     rowsData.forEach(rowData => {
@@ -50,33 +51,25 @@ function renderFloor(containerId, rowsData) {
         const seatsRow = document.createElement("div");
         seatsRow.className = "seats-row";
 
-        const maxSeatNum = 30; 
-        for (let i = 1; i <= maxSeatNum; i++) {
-            const seatId = `1층-${rowData.row}-${i}`; // 1층 전용 네이밍 고정
+        // JSON 데이터에 명시된 seats 배열을 기반으로만 안전하게 순회합니다.
+        rowData.seats.forEach(seatNum => {
+            const seatId = `1층-${rowData.row}-${seatNum}`; // 1층 전용 네이밍 고정
             
-            // 시야 방해석(검은색 비활성화) 체크
-            if (rowData.obstructed && rowData.obstructed.includes(i)) {
-                createSpecialButton(seatsRow, i, "reserved", true);
+            // 시야 방해석 체크
+            if (rowData.obstructed && rowData.obstructed.includes(seatNum)) {
+                createSpecialButton(seatsRow, seatNum, "reserved", true);
             }
             // 장애인석(휠체어) 체크
-            else if (rowData.disabled && rowData.disabled.includes(i)) {
-                // 이미 예약된 장애인석인지 검사
+            else if (rowData.disabled && rowData.disabled.includes(seatNum)) {
                 const isReserved = reservedSeats.includes(seatId);
                 createSeatButton(seatsRow, seatId, "♿", isReserved, "wheelchair");
             }
-            // 일반 예매 가능 좌석 체크
-            else if (rowData.seats.includes(i)) {
-                const isReserved = reservedSeats.includes(seatId);
-                createSeatButton(seatsRow, seatId, i, isReserved, "available");
-            }
-            // 통로 및 공백 공간 처리
+            // 일반 예매 가능 좌석
             else {
-                const emptySpace = document.createElement("div");
-                emptySpace.style.width = "25px";
-                emptySpace.style.height = "25px";
-                seatsRow.appendChild(emptySpace);
+                const isReserved = reservedSeats.includes(seatId);
+                createSeatButton(seatsRow, seatId, seatNum, isReserved, "available");
             }
-        }
+        });
 
         rowDiv.appendChild(seatsRow);
         container.appendChild(rowDiv);
