@@ -31,7 +31,6 @@ function loadSeatLayout() {
         });
 }
 
-// [핵심 수정] 1~30번 반복문 제거 -> 데이터 기반 렌더링으로 변경
 function renderFloor(containerId, rowsData) {
     const container = document.getElementById(containerId);
     if (!container) return;
@@ -48,30 +47,19 @@ function renderFloor(containerId, rowsData) {
         const seatsRow = document.createElement("div");
         seatsRow.className = "seats-row";
 
-        // 데이터에 있는 모든 좌석(seats + disabled + obstructed)을 합쳐서 정렬
-        const allSeats = [
-            ...(rowData.seats || []),
-            ...(rowData.disabled || []),
-            ...(rowData.obstructed || [])
-        ].sort((a, b) => a - b);
+        // 3열과 4열의 시작 정렬을 맞추기 위한 오프셋 (4열부터는 데이터에 "offset": 1 추가 필요)
+        for (let o = 0; o < (rowData.offset || 0); o++) {
+            seatsRow.appendChild(document.createElement("div")).className = "seat-cell";
+        }
 
-        // 좌석을 순서대로 배치하되, 10번과 20번을 기준으로 통로를 삽입
-        let lastSection = 0; // 0: 1-10구역, 1: 11-20구역, 2: 21-30구역
-        
+        const allSeats = [...(rowData.seats || []), ...(rowData.disabled || []), ...(rowData.obstructed || [])].sort((a, b) => a - b);
+        const rowNum = parseInt(rowData.row.replace(/[^0-9]/g, ""));
+
         allSeats.forEach(seatNum => {
-            const currentSection = seatNum <= 10 ? 0 : (seatNum <= 20 ? 1 : 2);
-            
-            // 구역이 바뀌면 통로 삽입
-            if (lastSection !== 0 && currentSection > lastSection) {
-                seatsRow.appendChild(document.createElement("div")).className = "aisle-space";
-            }
-            lastSection = currentSection;
-
-            const seatCell = document.createElement("div");
-            seatCell.className = "seat-cell";
-
             const seatId = `${rowData.row}-${seatNum}`;
             const currentSeatCleaned = seatId.replace(/[-_\s]/g, "").trim();
+            const seatCell = document.createElement("div");
+            seatCell.className = "seat-cell";
 
             if (rowData.obstructed && rowData.obstructed.includes(seatNum)) {
                 createSpecialButton(seatCell, seatNum, "reserved", true);
@@ -81,14 +69,20 @@ function renderFloor(containerId, rowsData) {
                 createSeatButton(seatCell, seatId, seatNum, cleanedReservedSeats.includes(currentSeatCleaned), "available");
             }
             seatsRow.appendChild(seatCell);
+
+            // 통로 조건: 1~3열은 9-10/19-20, 4열부턴 10-11/20-21
+            let aisleCondition = (rowNum <= 3) ? (seatNum === 9 || seatNum === 19) : (seatNum === 10 || seatNum === 20);
+            if (aisleCondition) {
+                const aisleSpace = document.createElement("div");
+                aisleSpace.className = "aisle-space";
+                seatsRow.appendChild(aisleSpace);
+            }
         });
-        
         rowDiv.appendChild(seatsRow);
         container.appendChild(rowDiv);
     });
 }
 
-// (이하 함수는 기존 로직 유지)
 function createSpecialButton(targetCell, label, className, isDisabled) {
     const btn = document.createElement("button");
     btn.className = `seat ${className}`;
@@ -162,36 +156,36 @@ function renderModalFloor(rowsData, mySeatsArray) {
         const seatsRow = document.createElement("div");
         seatsRow.className = "seats-row";
 
-        for (let i = 1; i <= 30; i++) {
-            const seatId = `${rowData.row}-${i}`;
+        for (let o = 0; o < (rowData.offset || 0); o++) {
+            seatsRow.appendChild(document.createElement("div")).className = "seat-cell";
+        }
+
+        const allSeats = [...(rowData.seats || []), ...(rowData.disabled || []), ...(rowData.obstructed || [])].sort((a, b) => a - b);
+        const rowNum = parseInt(rowData.row.replace(/[^0-9]/g, ""));
+
+        allSeats.forEach(seatNum => {
+            const seatId = `${rowData.row}-${seatNum}`;
             const currentSeatCleaned = seatId.replace(/[-_\s]/g, "").trim();
             const cell = document.createElement("div");
             cell.className = "seat-cell";
             
-            if ((rowData.seats && rowData.seats.includes(i)) || (rowData.disabled && rowData.disabled.includes(i)) || (rowData.obstructed && rowData.obstructed.includes(i))) {
-                const btn = document.createElement("button");
-                btn.style.width = "100%"; btn.style.height = "100%"; btn.disabled = true;
-                btn.innerText = rowData.disabled && rowData.disabled.includes(i) ? "♿" : i;
-                
-                if (cleanedMySeats.includes(currentSeatCleaned)) btn.className = "seat my-reserved";
-                else if (cleanedReservedSeats.includes(currentSeatCleaned)) btn.className = "seat reserved";
-                else btn.className = rowData.disabled && rowData.disabled.includes(i) ? "seat wheelchair" : (rowData.obstructed && rowData.obstructed.includes(i) ? "seat reserved" : "seat available");
-                cell.appendChild(btn);
-            }
+            const btn = document.createElement("button");
+            btn.style.width = "100%"; btn.style.height = "100%"; btn.disabled = true;
+            btn.innerText = rowData.disabled && rowData.disabled.includes(seatNum) ? "♿" : seatNum;
+            
+            if (cleanedMySeats.includes(currentSeatCleaned)) btn.className = "seat my-reserved";
+            else if (cleanedReservedSeats.includes(currentSeatCleaned)) btn.className = "seat reserved";
+            else btn.className = rowData.disabled && rowData.disabled.includes(seatNum) ? "seat wheelchair" : (rowData.obstructed && rowData.obstructed.includes(seatNum) ? "seat reserved" : "seat available");
+            
+            cell.appendChild(btn);
             seatsRow.appendChild(cell);
-            if (i === 10 || i === 20) seatsRow.appendChild(document.createElement("div")).className = "aisle-space";
-        }
+
+            let aisleCondition = (rowNum <= 3) ? (seatNum === 9 || seatNum === 19) : (seatNum === 10 || seatNum === 20);
+            if (aisleCondition) seatsRow.appendChild(document.createElement("div")).className = "aisle-space";
+        });
         rowDiv.appendChild(seatsRow);
         container.appendChild(rowDiv);
     });
 }
 
-function setupBookingForm() {
-    // 기존 폼 이벤트 로직 유지
-    const submitBtn = document.getElementById("submitBtn");
-    const checkBtn = document.getElementById("checkBtn"); 
-    const phoneInput = document.getElementById("phone");
-    phoneInput.addEventListener("input", (e) => { /* 기존 로직 */ });
-    checkBtn.addEventListener("click", () => { /* 조회 로직 */ });
-    submitBtn.addEventListener("click", () => { /* 예약 로직 */ });
-}
+function setupBookingForm() { /* 기존 폼 로직 유지 */ }
