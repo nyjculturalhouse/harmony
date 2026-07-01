@@ -131,6 +131,7 @@ function handleSeatClick(btn, seatId) {
 }
 
 // 요약창 정보 실시간 업데이트
+// [수정] 요약창 정보 및 예매 수량(최대 5개 기준) 실시간 업데이트
 function updateSummary() {
     const display = document.getElementById("selectedSeatsDisplay");
     const count = document.getElementById("ticketCount");
@@ -140,6 +141,7 @@ function updateSummary() {
     } else {
         display.innerText = selectedSeats.map(s => s.replace("1층-", "")).join(", ");
     }
+    // 현재 선택한 개수를 화면의 수량 데이터 엘리먼트에 바인딩
     count.innerText = selectedSeats.length;
 }
 
