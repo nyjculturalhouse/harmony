@@ -31,7 +31,7 @@ function loadSeatLayout() {
         });
 }
 
-// 배치도 렌더링 코어 함수 (통로 위치 10, 20으로 수정)
+// [핵심 수정] 1~30번 반복문 제거 -> 데이터 기반 렌더링으로 변경
 function renderFloor(containerId, rowsData) {
     const container = document.getElementById(containerId);
     if (!container) return;
@@ -44,41 +44,45 @@ function renderFloor(containerId, rowsData) {
     rowsData.forEach(rowData => {
         const rowDiv = document.createElement("div");
         rowDiv.className = "row-container";
-
-        const label = document.createElement("div");
-        label.className = "row-label";
-        label.innerText = rowData.row;
-        rowDiv.appendChild(label);
-
+        rowDiv.innerHTML = `<div class="row-label">${rowData.row}</div>`;
         const seatsRow = document.createElement("div");
         seatsRow.className = "seats-row";
 
-        for (let i = 1; i <= 30; i++) {
-            const seatId = `${rowData.row}-${i}`; 
-            const currentSeatCleaned = seatId.replace(/[-_\s]/g, "").trim();
+        // 데이터에 있는 모든 좌석(seats + disabled + obstructed)을 합쳐서 정렬
+        const allSeats = [
+            ...(rowData.seats || []),
+            ...(rowData.disabled || []),
+            ...(rowData.obstructed || [])
+        ].sort((a, b) => a - b);
+
+        // 좌석을 순서대로 배치하되, 10번과 20번을 기준으로 통로를 삽입
+        let lastSection = 0; // 0: 1-10구역, 1: 11-20구역, 2: 21-30구역
+        
+        allSeats.forEach(seatNum => {
+            const currentSection = seatNum <= 10 ? 0 : (seatNum <= 20 ? 1 : 2);
+            
+            // 구역이 바뀌면 통로 삽입
+            if (lastSection !== 0 && currentSection > lastSection) {
+                seatsRow.appendChild(document.createElement("div")).className = "aisle-space";
+            }
+            lastSection = currentSection;
+
             const seatCell = document.createElement("div");
             seatCell.className = "seat-cell";
 
-            // 좌석 종류 판단
-            if (rowData.obstructed && rowData.obstructed.includes(i)) {
-                createSpecialButton(seatCell, i, "reserved", true);
-            } else if (rowData.disabled && rowData.disabled.includes(i)) {
-                const isReserved = cleanedReservedSeats.includes(currentSeatCleaned);
-                createSeatButton(seatCell, seatId, "♿", isReserved, "wheelchair");
-            } else if (rowData.seats && rowData.seats.includes(i)) {
-                const isReserved = cleanedReservedSeats.includes(currentSeatCleaned);
-                createSeatButton(seatCell, seatId, i, isReserved, "available");
-            }
+            const seatId = `${rowData.row}-${seatNum}`;
+            const currentSeatCleaned = seatId.replace(/[-_\s]/g, "").trim();
 
+            if (rowData.obstructed && rowData.obstructed.includes(seatNum)) {
+                createSpecialButton(seatCell, seatNum, "reserved", true);
+            } else if (rowData.disabled && rowData.disabled.includes(seatNum)) {
+                createSeatButton(seatCell, seatId, "♿", cleanedReservedSeats.includes(currentSeatCleaned), "wheelchair");
+            } else {
+                createSeatButton(seatCell, seatId, seatNum, cleanedReservedSeats.includes(currentSeatCleaned), "available");
+            }
             seatsRow.appendChild(seatCell);
-
-            // 통로 삽입: 10번 뒤, 20번 뒤
-            if (i === 10 || i === 20) {
-                const aisleSpace = document.createElement("div");
-                aisleSpace.className = "aisle-space";
-                seatsRow.appendChild(aisleSpace);
-            }
-        }
+        });
+        
         rowDiv.appendChild(seatsRow);
         container.appendChild(rowDiv);
     });
