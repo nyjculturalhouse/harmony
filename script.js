@@ -51,7 +51,11 @@ function renderFloor(containerId, rowsData) {
             seatsRow.appendChild(document.createElement("div")).className = "seat-cell";
         }
 
-        const allSeats = Array.from(new Set([...(rowData.seats || []), ...(rowData.disabled || []), ...(rowData.obstructed || [])])).sort((a, b) => a - b);
+const allSeats = Array.from(new Set([
+    ...(rowData.seats || []), 
+    ...(rowData.disabled || []), 
+    ...(rowData.obstructed || [])
+])).sort((a, b) => a - b);
         const rowNum = parseInt(rowData.row.replace(/[^0-9]/g, ""));
 
         // [수정] index 파라미터 추가
