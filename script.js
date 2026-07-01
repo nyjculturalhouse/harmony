@@ -119,6 +119,7 @@ function handleSeatClick(btn, seatId) {
         btn.classList.remove("selected");
         selectedSeats = selectedSeats.filter(s => s !== seatId);
     } else {
+        // 이미 5개가 선택된 상태에서 추가 선택을 시도할 때 차단
         if (selectedSeats.length >= 5) {
             alert("좌석은 최대 5개까지 선택할 수 있습니다.");
             return;
