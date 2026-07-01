@@ -1,126 +1,51 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
-<title>공연 좌석 예매</title>
-
-<link rel="stylesheet" href="style.css">
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>다산아트홀 실시간 예매 시스템</title>
+    <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
+    <div class="container">
+        <h1>다산아트홀 좌석 예약</h1>
+        
+        <div class="legend">
+            <span class="legend-item"><span class="box available"></span> 예매가능</span>
+            <span class="legend-item"><span class="box selected"></span> 선택함</span>
+            <span class="legend-item"><span class="box reserved"></span> 예매완료</span>
+            <span class="legend-item"><span class="box wheelchair"></span> 장애인석</span>
+        </div>
 
-<header>
+        <div class="form-section">
+            <div class="input-group">
+                <label for="name">이름</label>
+                <input type="text" id="name" placeholder="홍길동" required>
+            </div>
+            <div class="input-group">
+                <label for="phone">연락처</label>
+                <input type="tel" id="phone" placeholder="010-1234-5678" required>
+            </div>
+            <div class="info-group">
+                <p>선택한 좌석: <strong id="selectedSeatsDisplay">없음</strong></p>
+                <p>총 예매 수량: <strong id="ticketCount">0</strong> / 5매</p>
+            </div>
+            <button id="submitBtn" class="btn-submit">예약 확정하기</button>
+        </div>
 
-<h1>2026 공연예매</h1>
+        <hr>
 
-<p>
-남양주시 문화의집
-</p>
+        <div class="stage">STAGE (무대)</div>
+        
+        <div class="seating-container">
+            <h3>[ 1 층 ]</h3>
+            <div id="floor1" class="floor"></div>
 
-</header>
+            <h3 style="margin-top: 40px;">[ 2 층 ]</h3>
+            <div id="floor2" class="floor"></div>
+        </div>
+    </div>
 
-
-<div class="container">
-
-<section class="info">
-
-<h2>예매정보</h2>
-
-<input
-id="name"
-placeholder="이름">
-
-<input
-id="phone"
-placeholder="연락처">
-
-<select id="count">
-
-<option value="1">1매</option>
-<option value="2">2매</option>
-<option value="3">3매</option>
-<option value="4">4매</option>
-<option value="5">5매</option>
-
-</select>
-
-</section>
-
-<section class="legend">
-
-<div>
-<span class="seat available"></span>
-선택가능
-</div>
-
-<div>
-<span class="seat selected"></span>
-선택중
-</div>
-
-<div>
-<span class="seat reserved"></span>
-예약완료
-</div>
-
-<div>
-<span class="seat disabled"></span>
-없는좌석
-</div>
-
-<div>
-<span class="seat wheelchair">♿</span>
-장애인석
-</div>
-
-</section>
-
-
-<section>
-
-<h2>
-1층
-</h2>
-
-<div id="floor1"></div>
-
-<h2>
-2층
-</h2>
-
-<div id="floor2"></div>
-
-</section>
-
-<section class="bottom">
-
-<h3>선택한 좌석</h3>
-
-<div id="selectedSeats">
-
-없음
-
-</div>
-
-<button id="reserveBtn">
-
-예약하기
-
-</button>
-
-</section>
-
-</div>
-
-<script src="script.js"></script>
-
+    <script src="script.js"></script>
 </body>
-
 </html>
