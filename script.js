@@ -25,6 +25,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 // 배치도 렌더링 함수
+// 배치도 렌더링 함수 (기존 함수를 이것으로 교체해 주세요)
 function renderFloor(containerId, rowsData) {
     const container = document.getElementById(containerId);
     
@@ -40,23 +41,44 @@ function renderFloor(containerId, rowsData) {
         const seatsRow = document.createElement("div");
         seatsRow.className = "seats-row";
 
-        // 일반석 배치
-        rowData.seats.forEach(seatNum => {
-            const seatId = `${containerId === 'floor1' ? '1층' : '2층'}-${rowData.row}-${seatNum}`;
-            createSeatButton(seatsRow, seatId, seatNum, false);
-        });
-
-        // 장애인석 등 특별석 배치
-        if (rowData.special) {
-            rowData.special.forEach(sp => {
-                const seatId = `${containerId === 'floor1' ? '1층' : '2층'}-${rowData.row}-${sp.id}`;
-                createSeatButton(seatsRow, seatId, sp.label, true);
-            });
+        // 1번부터 30번까지 순서대로 판단하면서 배치
+        const maxSeatNum = 30; 
+        for (let i = 1; i <= maxSeatNum; i++) {
+            const seatId = `${containerId === 'floor1' ? '1층' : '2층'}-${rowData.row}-${i}`;
+            
+            // 1. 시야 방해석(검은색) 체크
+            if (rowData.obstructed && rowData.obstructed.includes(i)) {
+                createSpecialButton(seatsRow, i, "reserved", true); // 클릭 불가능한 검은색 칸
+            }
+            // 2. 장애인석(휠체어) 체크
+            else if (rowData.disabled && rowData.disabled.includes(i)) {
+                createSeatButton(seatsRow, seatId, "♿", true);
+            }
+            // 3. 일반 예매 가능 좌석 체크
+            else if (rowData.seats.includes(i)) {
+                createSeatButton(seatsRow, seatId, i, false);
+            }
+            // 4. 아예 통로나 빈 공간인 경우 (공백 메우기용)
+            else {
+                const emptySpace = document.createElement("div");
+                emptySpace.style.width = "24px";
+                emptySpace.style.height = "24px";
+                seatsRow.appendChild(emptySpace);
+            }
         }
 
         rowDiv.appendChild(seatsRow);
         container.appendChild(rowDiv);
     });
+}
+
+// 시야방해석 전용 비활성화 버튼 생성 함수
+function createSpecialButton(targetRow, label, className, isDisabled) {
+    const btn = document.createElement("button");
+    btn.className = `seat ${className}`;
+    btn.innerText = label;
+    btn.disabled = isDisabled;
+    targetRow.appendChild(btn);
 }
 
 // 개별 좌석 버튼 생성 및 이벤트 부여
