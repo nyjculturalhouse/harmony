@@ -44,7 +44,7 @@ function renderFloor(containerId, rowsData) {
     // 혹시라도 reservedSeats가 배열이 아닐 경우를 대비한 2중 안전장치
     const safeReservedSeats = Array.isArray(reservedSeats) ? reservedSeats : [];
     
-    // [수정] 구글 시트 예약 데이터들의 공백/하이픈을 제거하여 정밀 매칭을 준비합니다.
+    // 구글 시트 예약 데이터들의 공백/하이픈을 제거하여 정밀 매칭을 준비합니다.
     const cleanedReservedSeats = safeReservedSeats.map(seat => 
         String(seat).replace(/[-_\s]/g, "").trim()
     );
@@ -64,7 +64,7 @@ function renderFloor(containerId, rowsData) {
         // 다산아트홀 1층 구조 기준 가로 최대 30칸 생성하며 맵 분석
         const maxSeatNum = 30; 
         for (let i = 1; i <= maxSeatNum; i++) {
-            // [수정] '1층-' 접두사를 완전히 제거하고 좌석 ID를 생성합니다.
+            // '1층-' 접두사를 완전히 제거하고 좌석 ID를 생성합니다.
             const seatId = `${rowData.row}-${i}`; 
             
             // 비교 대상 현재 좌석도 문자열을 정제합니다. (예: "1열5")
@@ -76,13 +76,13 @@ function renderFloor(containerId, rowsData) {
             }
             // ② 장애인석(휠체어석) 체크
             else if (rowData.disabled && rowData.disabled.includes(i)) {
-                // [수정] 정제된 비교 배열을 이용하여 예약을 확실하게 잡아냅니다.
+                // 정제된 비교 배열을 이용하여 예약을 확실하게 잡아냅니다.
                 const isReserved = cleanedReservedSeats.includes(currentSeatCleaned);
                 createSeatButton(seatsRow, seatId, "♿", isReserved, "wheelchair");
             }
             // ③ 일반 예매 가능 좌석 체크
             else if (rowData.seats && rowData.seats.includes(i)) {
-                // [수정] 정제된 비교 배열을 이용하여 예약을 확실하게 잡아냅니다.
+                // 정제된 비교 배열을 이용하여 예약을 확실하게 잡아냅니다.
                 const isReserved = cleanedReservedSeats.includes(currentSeatCleaned);
                 createSeatButton(seatsRow, seatId, i, isReserved, "available");
             }
@@ -154,7 +154,6 @@ function updateSummary() {
     if (selectedSeats.length === 0) {
         display.innerText = "없음";
     } else {
-        // [수정] 더 이상 '1층-' 접두사가 생성되지 않으므로 별도의 replace 없이 깔끔하게 조인합니다.
         display.innerText = selectedSeats.join(", ");
     }
     count.innerText = selectedSeats.length;
@@ -184,7 +183,7 @@ function setupBookingForm() {
         let phone = phoneInput.value.trim();
         
         if (!name || !phone) {
-            alert("예매자 이름 and 연락처를 입력해 주세요.");
+            alert("예매자 이름과 연락처를 입력해 주세요.");
             return;
         }
 
@@ -204,9 +203,11 @@ function setupBookingForm() {
         submitBtn.disabled = true;
         submitBtn.innerText = "예약 처리 중...";
         
+        // [수정] payload에 시트가 원하는 수량인 params.quantity 매핑용 quantity 데이터(selectedSeats.length)를 추가했습니다.
         const payload = {
             name: name,
-            phone: phone, // 구글 시트에 010-XXXX-XXXX 형태로 예쁘게 보관됩니다.
+            phone: phone, 
+            quantity: selectedSeats.length, // 시트에 전송될 선택 수량 추가
             seats: selectedSeats.join(",")
         };
         
