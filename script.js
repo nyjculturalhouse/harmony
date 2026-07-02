@@ -128,11 +128,13 @@ function renderFloor(containerId, rowsData) {
 }
 
 function handleSeatClick(btn, seatId) {
-    if (btn.classList.toggle("selected")) {
-        if (selectedSeats.length >= 5) { 
-            btn.classList.remove("selected"); 
-            return alert("최대 5개까지 선택 가능합니다."); 
-        }
+    if (!btn.classList.contains("selected") && selectedSeats.length >= 5) { 
+        return alert("최대 5개까지 선택 가능합니다."); 
+    }
+
+    const isSelected = btn.classList.toggle("selected");
+
+    if (isSelected) {
         selectedSeats.push(seatId);
     } else {
         selectedSeats = selectedSeats.filter(s => s !== seatId);
@@ -151,7 +153,7 @@ function initActionButtons() {
             if (selectedSeats.length === 0) {
                 return alert("선택된 좌석이 없습니다.");
             }
-            alert(`현재 선택하신 좌석은 [ ${selectedSeats.join(", ")} ] 입니다.`);
+            alert(`현재 선택하신 좌석은 [ ${selectedSeats.join(", ")} ] 입니다.\n배치도에 노란색으로 표시된 좌석을 한 번 더 확인해 주세요.`);
         };
     }
 
