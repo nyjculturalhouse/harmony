@@ -144,6 +144,18 @@ function handleSeatClick(btn, seatId) {
     document.getElementById("ticketCount").innerText = selectedSeats.length;
 }
 
+// 🛠️ 전화번호를 010-0000-0000 형식으로 포맷팅하는 헬퍼 함수
+function formatPhoneNumber(phoneStr) {
+    // 숫자만 추출
+    const nums = phoneStr.replace(/[^0-9]/g, "");
+    if (nums.length === 11) {
+        return nums.replace(/(\d{3})(\d{4})(\d{4})/, "$1-$2-$3");
+    } else if (nums.length === 10) {
+        return nums.replace(/(\d{3})(\d{3})(\d{4})/, "$1-$2-$3");
+    }
+    return phoneStr; // 올바른 자릿수가 아니면 정제된 원본 반환
+}
+
 // 🛠️ 버튼 클릭 처리 및 구글 앱스 스크립트(GAS) 전송 연동 함수
 function initActionButtons() {
     const checkBtn = document.getElementById("checkBtn");
@@ -233,7 +245,7 @@ function initActionButtons() {
             const phoneInput = document.getElementById("phone");
 
             const name = nameInput ? nameInput.value.trim() : "";
-            const phone = phoneInput ? phoneInput.value.trim() : "";
+            let phone = phoneInput ? phoneInput.value.trim() : "";
 
             if (!name || !phone) {
                 return alert("예매자 성명과 연락처를 모두 입력해 주세요.");
@@ -241,6 +253,9 @@ function initActionButtons() {
             if (selectedSeats.length === 0) {
                 return alert("좌석을 최소 1개 이상 선택해 주세요.");
             }
+
+            // 🛠️ 시트에 저장되기 전에 010-0000-0000 형태로 변환 처리 수행
+            phone = formatPhoneNumber(phone);
 
             if (confirm(`[${name}]님, 선택하신 좌석 [ ${selectedSeats.join(", ")} ] 총 ${selectedSeats.length}개로 예약을 확정하시겠습니까?`)) {
                 
@@ -251,7 +266,7 @@ function initActionButtons() {
                 const bookingData = {
                     timestamp: timestamp,                        // 1. 예약일시
                     name: name,                                  // 2. 성함
-                    phone: phone,                                // 3. 연락처
+                    phone: phone,                                // 3. 연락처 (하이픈 포함 완료)
                     count: selectedSeats.length,                 // 4. 예매좌석 수
                     seats: selectedSeats.join(", ")              // 5. 예매좌석 위치
                 };
