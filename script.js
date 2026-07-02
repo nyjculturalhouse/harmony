@@ -15,7 +15,7 @@ const rowLayoutConfigs = {
     "10열": { offset: 0, aisles: [10, 20] },
     "11열": { offset: 0, aisles: [10, 20] },
     "12열": { offset: 0, aisles: [10, 20] },
-    "13열": { offset: 4, aisles: [] } // 12열 4번 좌석 시작점에 맞춤 (offset 4)
+    "13열": { offset: 4, aisles: [7, 19] }
 };
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -41,7 +41,6 @@ function renderFloor(containerId, rowsData) {
     const reserved = reservedSeats.map(s => String(s).replace(/[^0-9]/g, ""));
 
     rowsData.forEach(row => {
-        // [중요 수정] JSON 데이터에 "offset"이 있으면 그 값을 쓰고, 없으면 rowLayoutConfigs를 씁니다.
         const config = rowLayoutConfigs[row.row] || { offset: 0, aisles: [10, 20] };
         const finalOffset = (row.offset !== undefined) ? row.offset : config.offset;
 
@@ -51,39 +50,49 @@ function renderFloor(containerId, rowsData) {
         const seatsRow = document.createElement("div");
         seatsRow.className = "seats-row";
 
-        // 확정된 finalOffset만큼 빈 셀 생성
         for (let i = 0; i < finalOffset; i++) {
             seatsRow.appendChild(document.createElement("div")).className = "seat-cell";
         }
 
         const allSeats = [...new Set([...(row.seats || []), ...(row.disabled || []), ...(row.obstructed || [])])].sort((a, b) => a - b);
         
-        // ... (위쪽 코드 동일)
-
-        allSeats.forEach((seatNum) => { // index 변수는 삭제해도 됩니다
+        allSeats.forEach((seatNum) => {
             const seatId = `${row.row}-${seatNum}`;
             const cell = document.createElement("div");
             cell.className = "seat-cell";
 
-            // ... (버튼 생성 로직 동일)
+            const isReserved = reserved.includes(seatId.replace(/[^0-9]/g, ""));
+            const isDisabled = row.disabled?.includes(seatNum);
+            const isObstructed = row.obstructed?.includes(seatNum);
 
+            const btn = document.createElement("button");
+            btn.className = `seat ${isReserved || isObstructed ? "reserved" : (isDisabled ? "wheelchair" : "available")}`;
+            btn.innerText = isDisabled ? "♿" : seatNum;
+            btn.disabled = isReserved || isObstructed;
+            if (!isReserved && !isObstructed) btn.onclick = () => handleSeatClick(btn, seatId);
+            
             cell.appendChild(btn);
             seatsRow.appendChild(cell);
 
-            // [수정된 통로 로직] 
-            // 13열은 7, 19번 뒤에 통로, 나머지는 좌석 번호를 기준으로 고정 통로 배치
-            if (row.row === "13열") {
-                if (seatNum === 3 || seatNum === 19) { // PDF 기준 13열 통로 위치
+            const rowNum = parseInt(row.row);
+            if (rowNum >= 1 && rowNum <= 3) {
+                if (seatNum === 9 || seatNum === 19) {
                     seatsRow.appendChild(document.createElement("div")).className = "aisle-space";
                 }
-            } else {
-                // 좌석 번호가 10번 또는 20번인 좌석 바로 다음에 통로 삽입
+            } else if (rowNum >= 4 && rowNum <= 12) {
                 if (seatNum === 10 || seatNum === 20) {
+                    seatsRow.appendChild(document.createElement("div")).className = "aisle-space";
+                }
+            } else if (rowNum === 13) {
+                if (seatNum === 7 || seatNum === 19) {
                     seatsRow.appendChild(document.createElement("div")).className = "aisle-space";
                 }
             }
         });
-// ... (아래 코드 동일)
+        rowDiv.appendChild(seatsRow);
+        container.appendChild(rowDiv);
+    });
+}
 
 function handleSeatClick(btn, seatId) {
     if (btn.classList.toggle("selected")) {
