@@ -96,7 +96,6 @@ function renderFloor(containerId, rowsData) {
                 } else if (row.row === "2열" || row.row === "3열") {
                     isObstructedSeat = [1, 2, 27, 28].includes(actualSeatNum);
                 } 
-                // 🛠️ 7열 시야제한석 해제 피드백 반영: 기존의 7열 하드코딩 차단 조건 삭제
 
                 // GAS에서 예약 완료되었거나 시야제한석인 경우 예매 불가 처리
                 const isReserved = reserved.includes(seatId.replace(/[^0-9]/g, "")) || isObstructedSeat;
@@ -146,14 +145,13 @@ function handleSeatClick(btn, seatId) {
 
 // 🛠️ 전화번호를 010-0000-0000 형식으로 포맷팅하는 헬퍼 함수
 function formatPhoneNumber(phoneStr) {
-    // 숫자만 추출
     const nums = phoneStr.replace(/[^0-9]/g, "");
     if (nums.length === 11) {
         return nums.replace(/(\d{3})(\d{4})(\d{4})/, "$1-$2-$3");
     } else if (nums.length === 10) {
         return nums.replace(/(\d{3})(\d{3})(\d{4})/, "$1-$2-$3");
     }
-    return phoneStr; // 올바른 자릿수가 아니면 정제된 원본 반환
+    return phoneStr;
 }
 
 // 🛠️ 버튼 클릭 처리 및 구글 앱스 스크립트(GAS) 전송 연동 함수
@@ -165,27 +163,21 @@ function initActionButtons() {
         checkBtn.onclick = () => {
             const floorContainer = document.getElementById("floor1");
             
-            // 만약 이미 확인 모드(checking-mode)라면, 모드를 종료하고 원래 배치도로 원복합니다.
             if (floorContainer.classList.contains("checking-mode")) {
                 floorContainer.classList.remove("checking-mode");
-                
-                // 내가 조회했던 좌석들의 하이라이트 클래스를 제거합니다.
                 document.querySelectorAll(".seat.my-booked-seat").forEach(btn => {
                     btn.classList.remove("my-booked-seat");
                 });
-
                 checkBtn.innerText = "예약 확인하기";
                 checkBtn.style.backgroundColor = "#1c2434";
                 return;
             }
 
-            // 입력 필드에서 이름과 연락처를 가져옵니다.
             const nameInput = document.getElementById("name");
             const phoneInput = document.getElementById("phone");
             const name = nameInput ? nameInput.value.trim() : "";
             const phone = phoneInput ? phoneInput.value.trim() : "";
 
-            // 이름과 연락처가 비어있으면 경고창을 띄웁니다.
             if (!name || !phone) {
                 return alert("예약 확인을 위해 이름과 연락처를 입력해 주세요.");
             }
@@ -193,7 +185,6 @@ function initActionButtons() {
             checkBtn.innerText = "조회 중...";
             checkBtn.disabled = true;
 
-            // 📊 GAS의 doPost 분기 조건에 완벽히 맞추기 위해 POST 방식으로 요청 본문에 실어 전송합니다.
             const checkQueryData = {
                 action: "checkReservation",
                 name: name,
@@ -216,7 +207,6 @@ function initActionButtons() {
                     checkBtn.innerText = "배치도 돌아가기";
                     checkBtn.style.backgroundColor = "#ff3838";
 
-                    // 가져온 데이터(예: ["1열-2", "4열-15"])에 대응하는 실제 좌석 엘리먼트를 찾아 체크(하이라이트) 클래스를 줍니다.
                     result.seats.forEach(seatId => {
                         const matchBtn = document.querySelector(`[data-seat-id="${seatId}"]`);
                         if (matchBtn) {
@@ -241,6 +231,14 @@ function initActionButtons() {
 
     if (submitBtn) {
         submitBtn.onclick = () => {
+            // ⏰ [추가] 7월 3일 23시 59분 예매 제한 로직
+            const nowTime = new Date();
+            const limitTime = new Date(2026, 6, 3, 23, 59, 59); // 자바스크립트는 0월부터 시작하므로 6 = 7월입니다.
+            
+            if (nowTime > limitTime) {
+                return alert("🚫 죄송합니다. 티켓 예매 가능 시간이 마감되었습니다.");
+            }
+
             const nameInput = document.getElementById("name");
             const phoneInput = document.getElementById("phone");
 
@@ -254,24 +252,21 @@ function initActionButtons() {
                 return alert("좌석을 최소 1개 이상 선택해 주세요.");
             }
 
-            // 🛠️ 시트에 저장되기 전에 010-0000-0000 형태로 변환 처리 수행
             phone = formatPhoneNumber(phone);
 
             if (confirm(`[${name}]님, 선택하신 좌석 [ ${selectedSeats.join(", ")} ] 총 ${selectedSeats.length}개로 예약을 확정하시겠습니까?`)) {
                 
-                // 📊 [구글 시트 전송용 데이터 구성] 요청하신 5대 항목 취합
                 const now = new Date();
                 const timestamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
                 
                 const bookingData = {
-                    timestamp: timestamp,                        // 1. 예약일시
-                    name: name,                                  // 2. 성함
-                    phone: phone,                                // 3. 연락처 (하이픈 포함 완료)
-                    count: selectedSeats.length,                 // 4. 예매좌석 수
-                    seats: selectedSeats.join(", ")              // 5. 예매좌석 위치
+                    timestamp: timestamp,
+                    name: name,
+                    phone: phone,
+                    count: selectedSeats.length,
+                    seats: selectedSeats.join(", ")
                 };
 
-                // 🚀 구글 앱스 스크립트(GAS)로 POST 전송
                 submitBtn.disabled = true;
                 submitBtn.innerText = "전송 중...";
 
@@ -284,7 +279,7 @@ function initActionButtons() {
                 .then(result => {
                     if (result.status === "success") {
                         alert("🎉 예약이 완벽하게 확정되었습니다!");
-                        location.reload(); // 성공 시 페이지를 새로고침하여 예약 좌석 갱신
+                        location.reload();
                     } else {
                         alert("예약 처리 중 오류가 발생했습니다: " + (result.message || "알 수 없는 에러"));
                         submitBtn.disabled = false;
@@ -302,20 +297,17 @@ function initActionButtons() {
     }
 }
 
-// 💡 [추가] 사용자가 전화번호를 타이핑할 때 실시간으로 하이픈(-)을 붙여주는 오토 포맷 이벤트 리스너
+// 사용자가 전화번호를 타이핑할 때 실시간으로 하이픈(-)을 붙여주는 오토 포맷 이벤트 리스너
 document.addEventListener("DOMContentLoaded", () => {
     const phoneInput = document.getElementById("phone");
     if (phoneInput) {
         phoneInput.addEventListener("input", (e) => {
-            // 숫자만 추출
             let value = e.target.value.replace(/[^0-9]/g, "");
             
-            // 최대 11자리까지만 허용
             if (value.length > 11) {
                 value = value.substring(0, 11);
             }
             
-            // 글자 수에 따라 하이픈 자동 포지셔닝
             if (value.length > 7) {
                 e.target.value = value.replace(/(\d{3})(\d{4})(\d{4})/, "$1-$2-$3");
             } else if (value.length > 3) {
