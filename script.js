@@ -83,9 +83,10 @@ function renderFloor(containerId, rowsData) {
                     btn.onclick = () => handleSeatClick(btn, seatId);
                 }
 
-                // [통로 마진 정밀 설정] 
-                // 9번 칸(좌측 통로 경계), 20번 칸(우측 통로 경계)에 마진을 주어 전 열을 정렬합니다.
-                if (seatNum === 9 || seatNum === 20) {
+                // 🛠️ [통로 마진 정밀 설정 수정] 
+                // 1~10칸 / 11~20칸 / 21~30칸 구역 분할에 맞춰 
+                // 10번 칸과 20번 칸의 오른쪽에 정확히 통로 마진을 부여합니다.
+                if (seatNum === 10 || seatNum === 20) {
                     cell.style.marginRight = "24px";
                 }
 
@@ -96,8 +97,8 @@ function renderFloor(containerId, rowsData) {
                 const emptyCell = document.createElement("div");
                 emptyCell.className = "seat-cell";
                 
-                // 빈 공간 격자일지라도 통로 구역(9번, 20번 위치)을 지나갈 때는 마진을 동일하게 유지해야 대칭이 맞습니다.
-                if (seatNum === 9 || seatNum === 20) {
+                // 🛠️ 빈 공간 격자일지라도 10번, 20번 위치를 지나갈 때는 동일하게 마진을 유지합니다.
+                if (seatNum === 10 || seatNum === 20) {
                     emptyCell.style.marginRight = "24px";
                 }
                 
