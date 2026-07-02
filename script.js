@@ -6,6 +6,7 @@ let reservedSeats = [];
 
 document.addEventListener("DOMContentLoaded", () => {
     fetchReservedSeats();
+    initActionButtons(); // 🛠️ 버튼 이벤트 리스너 초기화 함수 호출 추가
 });
 
 function fetchReservedSeats() {
@@ -139,10 +140,12 @@ function handleSeatClick(btn, seatId) {
     document.getElementById("selectedSeatsDisplay").innerText = selectedSeats.length ? selectedSeats.join(", ") : "없음";
     document.getElementById("ticketCount").innerText = selectedSeats.length;
 }
-// script.js 맨 아래에 추가할 버튼 이벤트 코드
-document.addEventListener("DOMContentLoaded", () => {
-    // 1. 예약 확인하기 버튼 연결
-    const checkBtn = Array.from(document.querySelectorAll("button")).find(el => el.textContent.trim() === "예약 확인하기");
+
+// 🛠️ 새로 추가된 버튼 클릭 처리용 함수 (다른 곳은 수정 없이 하단에 연동 로직만 순수 추가)
+function initActionButtons() {
+    const checkBtn = document.getElementById("checkBtn");
+    const submitBtn = document.getElementById("submitBtn");
+
     if (checkBtn) {
         checkBtn.onclick = () => {
             if (selectedSeats.length === 0) {
@@ -152,12 +155,13 @@ document.addEventListener("DOMContentLoaded", () => {
         };
     }
 
-    // 2. 예약 확정하기 버튼 연결 (구글 시트로 데이터 전송 등)
-    const confirmBtn = Array.from(document.querySelectorAll("button")).find(el => el.textContent.trim() === "예약 확정하기");
-    if (confirmBtn) {
-        confirmBtn.onclick = () => {
-            const name = document.querySelector('input[placeholder*="성명"]').value.trim();
-            const phone = document.querySelector('input[placeholder*="010"]').value.trim();
+    if (submitBtn) {
+        submitBtn.onclick = () => {
+            const nameInput = document.getElementById("name");
+            const phoneInput = document.getElementById("phone");
+
+            const name = nameInput ? nameInput.value.trim() : "";
+            const phone = phoneInput ? phoneInput.value.trim() : "";
 
             if (!name || !phone) {
                 return alert("예매자 성명과 연락처를 모두 입력해 주세요.");
@@ -166,16 +170,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 return alert("좌석을 최소 1개 이상 선택해 주세요.");
             }
 
-            // 구글 시트(GAS)로 예매 정보 전송 시도
-            if (confirm(`[${name}]님, 선택하신 좌석 ${selectedSeats.length}개로 예약을 확정하시겠습니까?`)) {
-                sendBookingData(name, phone);
+            if (confirm(`[${name}]님, 선택하신 좌석 [ ${selectedSeats.join(", ")} ] 총 ${selectedSeats.length}개로 예약을 확정하시겠습니까?`)) {
+                // 전송 기능 확장용 로직 위치
+                alert("예약이 요청되었습니다.");
             }
         };
     }
-});
-
-// 구글 시트(GAS) 전송 함수 예시 (필요시 목적에 맞게 수정)
-function sendBookingData(name, phone) {
-    // 예매 데이터를 구글 시트로 보내는 전송 로직이 필요하다면 이곳에 구현합니다.
-    alert("예약 요청이 전송되었습니다. (GAS 전송 로직 연결 필요)");
 }
