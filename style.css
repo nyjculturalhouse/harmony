@@ -377,13 +377,12 @@ body {
 }
 
 /* ==========================================================================
-   📱 [적응형 최적화] 모바일 터치 편의성을 위한 가로 스크롤 레이아웃으로 변경
+   📱 [적응형 최적화] 모바일 및 다양한 해상도 대응 미디어 쿼리 원복
    ========================================================================== */
-
 @media (max-width: 1200px) {
     body { padding: 10px; }
     .main-content {
-        flex-direction: column; 
+        flex-direction: column;
         min-height: auto;
     }
     .info-zone {
@@ -404,8 +403,8 @@ body {
 
 @media (max-width: 768px) {
     .seating-container {
-        min-width: 1050px; 
-        transform: none !important; 
+        min-width: 1050px;
+        transform: none !important;
         margin-bottom: 0 !important;
         padding: 10px 0;
     }
