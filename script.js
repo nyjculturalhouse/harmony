@@ -15,7 +15,7 @@ const rowLayoutConfigs = {
     "10열": { offset: 0, aisles: [10, 20] },
     "11열": { offset: 0, aisles: [10, 20] },
     "12열": { offset: 0, aisles: [10, 20] },
-    "13열": { offset: 3, aisles: [] }
+    "13열": { offset: 4, aisles: [] } // 12열 4번 좌석 시작점에 맞춤 (offset 4)
 };
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -48,6 +48,7 @@ function renderFloor(containerId, rowsData) {
         const seatsRow = document.createElement("div");
         seatsRow.className = "seats-row";
 
+        // Offset 적용
         for (let i = 0; i < config.offset; i++) {
             seatsRow.appendChild(document.createElement("div")).className = "seat-cell";
         }
@@ -72,8 +73,9 @@ function renderFloor(containerId, rowsData) {
             cell.appendChild(btn);
             seatsRow.appendChild(cell);
 
-            // [수정] 13열 전용 통로 및 나머지 열 통로 로직을 이곳에 위치시켰습니다.
+            // 13열 전용 통로 및 나머지 열 통로
             if (row.row === "13열") {
+                // 13열의 통로 (PDF 기준)
                 if (seatNum === 7 || seatNum === 19) {
                     seatsRow.appendChild(document.createElement("div")).className = "aisle-space";
                 }
