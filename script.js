@@ -15,8 +15,9 @@ function fetchReservedSeats() {
         .catch(() => { reservedSeats = []; loadSeatLayout(); });
 }
 
+// 🛠️ 기존 fetch("seats.json") 뒤에 ?v=1 을 붙여서 캐시를 강제로 파괴합니다.
 function loadSeatLayout() {
-    fetch("seats.json")
+    fetch("seats.json?v=1")  // <-- 여기를 이렇게 변경!
         .then(res => res.json())
         .then(data => renderFloor("floor1", data.floor1));
 }
