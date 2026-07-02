@@ -15,7 +15,7 @@ body {
     min-height: 100vh;
 }
 
-/* 메인 컨테이너 - 1번 사진처럼 PC 화면에 꽉 차도록 max-width 상향 및 가로 폭 최적화 */
+/* 메인 컨테이너 */
 .container {
     width: 100%;
     max-width: 1650px; 
@@ -60,7 +60,7 @@ body {
     border-radius: 3px;
 }
 
-/* 🧱 콘텐츠 영역 분할 (우측 영역과 좌측 영역이 찌러지지 않게 정렬 안정화) */
+/* 콘텐츠 영역 분할 */
 .main-content {
     display: flex;
     justify-content: space-between;
@@ -69,7 +69,7 @@ body {
     min-height: 800px;
 }
 
-/* [좌측] 좌석 선택 구역 - 1번 사진처럼 공간을 꽉 채우도록 설정 */
+/* [좌측] 좌석 선택 구역 */
 .booking-zone {
     flex: 1;
     min-width: 0;
@@ -104,7 +104,6 @@ body {
     min-width: 1050px; 
 }
 
-/* 1층 타이틀 영역 숨김 */
 .floor-title {
     display: none !important;
 }
@@ -117,7 +116,6 @@ body {
     align-items: center; 
 }
 
-/* 행(Row) 배열 레이아웃 */
 .row-container {
     display: flex;
     align-items: center;
@@ -139,7 +137,6 @@ body {
     justify-content: center; 
 }
 
-/* 좌석 셀 크기 고정 (찌그러짐 방지) */
 .seat-cell {
     width: 29px;
     height: 29px;
@@ -149,7 +146,6 @@ body {
     flex-shrink: 0;
 }
 
-/* 💺 좌석 버튼 스타일 */
 .seat {
     width: 29px;        
     height: 29px;       
@@ -167,7 +163,6 @@ body {
 .available:hover { background-color: #6c4fd1; transform: scale(1.05); }
 .wheelchair { background-color: #00b894; color: #fff; font-size: 12px; } 
 
-/* 🌟 [선택좌석 노란색 세팅] 요구사항 반영: 선택한 좌석은 노란색으로 확실히 뜨도록 속성 변경 */
 .selected { 
     background-color: #f1c40f !important; 
     color: #000000 !important; 
@@ -178,16 +173,14 @@ body {
 
 .reserved { background-color: #4b5563; color: #718096; cursor: not-allowed; }
 
-/* 🛠️ [예약 확인 확인하기 구동 스타일 추가] 확인 모드일 때 선택 안 된 좌석들은 암전(흐리게) 처리 */
 .floor.checking-mode .seat:not(.my-booked-seat) {
     opacity: 0.15;
     pointer-events: none;
 }
 
-/* 🛠️ 내 예약 찾기 팝업 조회 성공 시, 배치도에서 해당 좌석을 확실하게 체크 표시해 주는 전용 스타일 */
 .floor.checking-mode .seat.my-booked-seat {
     opacity: 1 !important;
-    background-color: #2ecc71 !important; /* 내 예약 좌석은 선명한 녹색으로 강제 변경 */
+    background-color: #2ecc71 !important;
     color: #ffffff !important;
     font-weight: bold;
     transform: scale(1.25);
@@ -200,10 +193,10 @@ body {
     100% { transform: scale(1.25); box-shadow: 0 0 20px #2ecc71; }
 }
 
-/* [우측] 정보 입력 및 예약 구역 (너비 고정 및 찌러짐 방지) */
+/* [우측] 정보 입력 및 예약 구역 */
 .info-zone {
     width: 380px;
-    flex-shrink: 0; /* 좌석 구역이 넓어져도 이 구역이 찌러지지 않도록 고정 */
+    flex-shrink: 0; 
     background-color: #ffffff;
     border-left: 1px solid #e2e8f0;
     display: flex;
@@ -247,7 +240,6 @@ body {
     outline: none;
 }
 
-/* 🛠️ [선택 내역 확인창 일그러짐 해결] 2번 사진의 글자 깨짐 및 뭉개짐 전면 교정 */
 .summary-box {
     background: #f1f5f9;
     border-radius: 8px;
@@ -267,14 +259,14 @@ body {
 .summary-item {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start; /* 글자가 길어져도 정렬이 깨지지 않게 최적화 */
+    align-items: flex-start; 
     font-size: 14px;
     width: 100%;
 }
 .summary-item span { 
     color: #475569; 
     font-weight: 600;
-    flex-shrink: 0; /* 항목 이름이 찌그러지지 않게 보호 */
+    flex-shrink: 0; 
 }
 .summary-item strong { 
     color: #0f172a; 
@@ -284,18 +276,16 @@ body {
 }
 #ticketCount { color: #ff3838; font-size: 16px; }
 
-/* 선택한 좌석 노출 영역의 일러짐과 뭉개짐 방지 */
 #selectedSeatsDisplay { 
     max-width: 220px;
     text-align: right;
-    word-break: keep-all; /* 단어 단위로 깔끔하게 떨어지도록 변경 */
+    word-break: keep-all; 
     white-space: normal;
     font-size: 13px;
     line-height: 1.4;
     color: #1e293b;
 }
 
-/* 하단 버튼 영역 */
 .action-area {
     padding: 24px;
     background: #ffffff;
@@ -338,9 +328,12 @@ body {
     transition: background-color 0.2s ease;
 }
 
-/* 미디어 쿼리 화면 대응 안정화 */
+/* [수정된 미디어 쿼리] 모바일 좌석 정렬 및 스크롤 최적화 */
 @media (max-width: 1200px) {
-    body { padding: 10px; }
+    body { 
+        padding: 10px; 
+        align-items: flex-start; 
+    }
     .main-content {
         flex-direction: column;
         min-height: auto;
@@ -349,5 +342,20 @@ body {
         width: 100%;
         border-left: none;
         border-top: 1px solid #e2e8f0;
+    }
+    .booking-zone {
+        width: 100%;
+        overflow-x: auto; 
+        padding: 20px 10px;
+    }
+    .seating-container {
+        min-width: 950px; 
+    }
+    .row-container {
+        justify-content: flex-start; 
+        padding-left: 20px;
+    }
+    .seats-row {
+        justify-content: flex-start; 
     }
 }
