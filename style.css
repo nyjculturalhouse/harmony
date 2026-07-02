@@ -60,7 +60,7 @@ body {
     border-radius: 3px;
 }
 
-/* 🧱 콘텐츠 영역 분할 (우측 영역과 좌측 영역이 찌그러지지 않게 정렬 안정화) */
+/* 🧱 콘텐츠 영역 분할 (우측 영역과 좌측 영역이 찌러지지 않게 정렬 안정화) */
 .main-content {
     display: flex;
     justify-content: space-between;
@@ -166,7 +166,16 @@ body {
 .available { background-color: #8364e2; color: #fff; }
 .available:hover { background-color: #6c4fd1; transform: scale(1.05); }
 .wheelchair { background-color: #00b894; color: #fff; font-size: 12px; } 
-.selected { background-color: #ff3838 !important; color: #fff !important; font-weight: bold; transform: scale(1.1); box-shadow: 0 0 8px rgba(255,56,56,0.6); }
+
+/* 🌟 [선택된 좌석 상태 교정] 헤더 범례와 일치하도록 배경색 노란색 처리 변경 및 중요도 명시 */
+.selected { 
+    background-color: #f1c40f !important; 
+    color: #000000 !important; 
+    font-weight: bold; 
+    transform: scale(1.1); 
+    box-shadow: 0 0 8px rgba(241, 196, 15, 0.6); 
+}
+
 .reserved { background-color: #4b5563; color: #718096; cursor: not-allowed; }
 
 /* [우측] 정보 입력 및 예약 구역 (너비 고정 및 찌러짐 방지) */
