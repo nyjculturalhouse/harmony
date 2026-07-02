@@ -75,3 +75,67 @@ function renderFloor(containerId, rowsData) {
                 row.seats?.includes(actualSeatNum) ||
                 row.disabled?.includes(actualSeatNum) ||
                 row.obstructed?.includes(actualSeatNum)
+            );
+
+            const cell = document.createElement("div");
+            cell.className = "seat-cell";
+
+            // 🛠️ [통로 마진 정밀 설정] 좌석 유무와 관계없이 '격자' 기준 10번과 20번 뒤에 무조건 고정 통로 배치
+            if (seatNum === 10 || seatNum === 20) {
+                cell.style.marginRight = "24px";
+            }
+
+            if (isExistInJson) {
+                const seatId = `${row.row}-${actualSeatNum}`;
+                
+                // 💡 [시야제한석 차단 조건]
+                let isObstructedSeat = false;
+                if (row.row === "1열") {
+                    isObstructedSeat = [1, 2, 3, 4, 14, 15, 24, 25, 26, 27].includes(actualSeatNum);
+                } else if (row.row === "2열" || row.row === "3열") {
+                    isObstructedSeat = [1, 2, 27, 28].includes(actualSeatNum);
+                } 
+                // 🛠️ 7열 시야제한석 해제 피드백 반영: 기존의 7열 하드코딩 차단 조건 삭제
+
+                // GAS에서 예약 완료되었거나 시야제한석인 경우 예매 불가 처리
+                const isReserved = reserved.includes(seatId.replace(/[^0-9]/g, "")) || isObstructedSeat;
+                const isDisabled = row.disabled?.includes(actualSeatNum);
+
+                const btn = document.createElement("button");
+                
+                // 클래스 지정
+                btn.className = `seat ${isReserved ? "reserved" : (isDisabled ? "wheelchair" : "available")}`;
+                btn.innerText = isDisabled ? "♿" : actualSeatNum;
+                btn.disabled = isReserved; 
+                
+                if (!isReserved) {
+                    btn.onclick = () => handleSeatClick(btn, seatId);
+                }
+
+                cell.appendChild(btn);
+            } else {
+                // 좌석이 배치되지 않는 격자 칸은 투명한 공백 처리
+                cell.classList.add("empty");
+            }
+
+            seatsRow.appendChild(cell);
+        }
+
+        rowDiv.appendChild(seatsRow);
+        container.appendChild(rowDiv);
+    });
+}
+
+function handleSeatClick(btn, seatId) {
+    if (btn.classList.toggle("selected")) {
+        if (selectedSeats.length >= 5) { 
+            btn.classList.remove("selected"); 
+            return alert("최대 5개까지 선택 가능합니다."); 
+        }
+        selectedSeats.push(seatId);
+    } else {
+        selectedSeats = selectedSeats.filter(s => s !== seatId);
+    }
+    document.getElementById("selectedSeatsDisplay").innerText = selectedSeats.length ? selectedSeats.join(", ") : "없음";
+    document.getElementById("ticketCount").innerText = selectedSeats.length;
+}
