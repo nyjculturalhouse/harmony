@@ -22,7 +22,7 @@ function loadSeatLayout() {
         .then(data => renderFloor("floor1", data.floor1));
 }
 
-// 🎯 최종 완성된 30칸 고정 격자 렌더링 함수 (시야제한석 조건 완벽 추가)
+// 🎯 최종 완성된 30칸 고정 격자 렌더링 함수
 function renderFloor(containerId, rowsData) {
     const container = document.getElementById(containerId);
     container.innerHTML = "";
@@ -44,10 +44,11 @@ function renderFloor(containerId, rowsData) {
 
             // 💡 [도면 매핑 로직] 각 격자(seatNum) 위치에 들어갈 실제 JSON 좌석 번호(actualSeatNum) 매칭
             if (row.row === "1열" || row.row === "2열" || row.row === "3열") {
-                // 1~3열: 격자 2~9번 = 좌석 1~8번 / 격자 11~19번 = 좌석 9~17번 / 격자 21~28번 = 좌석 18~25번
-                if (seatNum >= 2 && seatNum <= 9) actualSeatNum = seatNum - 1;
-                else if (seatNum >= 11 && seatNum <= 19) actualSeatNum = seatNum - 2;
-                else if (seatNum >= 21 && seatNum <= 28) actualSeatNum = seatNum - 3;
+                // 🛠️ 1~3열 정렬 피드백 반영: 격자 번호와 좌석 번호가 1:1로 일치해야 통로 라인과 매칭됩니다.
+                // 1번 칸만 공백으로 비워두고, 2번 칸부터 좌석 번호 2번, 10번 칸은 좌석 번호 10번으로 매핑
+                if (seatNum >= 2 && seatNum <= 30) {
+                    actualSeatNum = seatNum;
+                }
             } 
             else if (row.row === "13열") {
                 // 좌측 구역 (격자 4~10번 -> 실제 좌석 1~7번)
@@ -86,27 +87,26 @@ function renderFloor(containerId, rowsData) {
             if (isExistInJson) {
                 const seatId = `${row.row}-${actualSeatNum}`;
                 
-                // 💡 [시야제한석 차단 조건 추가] 요청하신 열과 번호에 해당하는지 체크
+                // 💡 [시야제한석 차단 조건]
                 let isObstructedSeat = false;
                 if (row.row === "1열") {
                     isObstructedSeat = [1, 2, 3, 4, 14, 15, 24, 25, 26, 27].includes(actualSeatNum);
                 } else if (row.row === "2열" || row.row === "3열") {
                     isObstructedSeat = [1, 2, 27, 28].includes(actualSeatNum);
                 } else if (row.row === "7열") {
-                    // 기존 7열의 시야제한석(25, 26번) 유지
                     isObstructedSeat = [25, 26].includes(actualSeatNum);
                 }
 
-                // GAS에서 예약 완료되었거나, 새로 추가된 시야제한석인 경우 둘 다 예매 불가 처리
+                // GAS에서 예약 완료되었거나 시야제한석인 경우 예매 불가 처리
                 const isReserved = reserved.includes(seatId.replace(/[^0-9]/g, "")) || isObstructedSeat;
                 const isDisabled = row.disabled?.includes(actualSeatNum);
 
                 const btn = document.createElement("button");
                 
-                // 클래스 지정 (시야제한석도 예매완료와 동일하게 빨간색 테마 reserved 적용)
+                // 클래스 지정
                 btn.className = `seat ${isReserved ? "reserved" : (isDisabled ? "wheelchair" : "available")}`;
                 btn.innerText = isDisabled ? "♿" : actualSeatNum;
-                btn.disabled = isReserved; // true가 되면 클릭 불가 및 선택 불가 상태가 됩니다.
+                btn.disabled = isReserved; 
                 
                 if (!isReserved) {
                     btn.onclick = () => handleSeatClick(btn, seatId);
