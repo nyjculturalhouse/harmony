@@ -60,15 +60,19 @@ body {
     border-radius: 3px;
 }
 
-/* 콘텐츠 영역 분할 */
+/* 🛠️ 콘텐츠 영역 분할 (Grid 버그 방지를 위해 Flex 구조로 수정) */
 .main-content {
-    display: grid;
-    grid-template-columns: 1fr 380px; 
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch;
+    width: 100%;
     min-height: 750px;
 }
 
-/* [좌측] 좌석 선택 구역 */
+/* 🛠️ [좌측] 좌석 선택 구역 (Flex 주도권 및 찌그러짐 방지 속성 추가) */
 .booking-zone {
+    flex: 1;
+    min-width: 0;
     background-color: #2a3142;
     padding: 40px 30px;
     display: flex;
@@ -181,8 +185,10 @@ body {
     box-shadow: 0 0 12px #ffc107; 
 }
 
-/* [우측] 정보 입력 및 결제/예약 구역 */
+/* 🛠️ [우측] 정보 입력 및 결제/예약 구역 (너비 고정 및 수축 차단 속성 보완) */
 .info-zone {
+    width: 380px;
+    flex-shrink: 0;
     background-color: #ffffff;
     border-left: 1px solid #e2e8f0;
     display: flex;
@@ -260,147 +266,4 @@ body {
 .summary-item strong { color: #0f172a; font-size: 15px; font-weight: 700; }
 #ticketCount { color: #ff3838; font-size: 16px; }
 #selectedSeatsDisplay { 
-    max-width: 200px;
-    text-align: right;
-    word-break: break-all;
-    font-size: 13px;
-}
-
-/* 하단 예약 및 확인 버튼 영역 */
-.action-area {
-    padding: 24px;
-    background: #ffffff;
-    border-top: 1px solid #e2e8f0;
-    display: flex;
-    flex-direction: column;
-    gap: 12px; 
-}
-.btn-submit {
-    display: block;
-    width: 100%;
-    padding: 16px;
-    background: #ff3838;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    box-shadow: 0 4px 12px rgba(255,56,56,0.3);
-    transition: all 0.2s ease;
-}
-.btn-submit:hover {
-    background: #e02424;
-    transform: translateY(-1px);
-    box-shadow: 0 6px 16px rgba(255,56,56,0.4);
-}
-.btn-submit:disabled {
-    background: #cbd5e1;
-    color: #94a3b8;
-    cursor: not-allowed;
-    box-shadow: none;
-    transform: none;
-}
-
-.btn-check {
-    display: block;
-    width: 100%;
-    padding: 14px;
-    background: #1c2434;
-    color: #ffffff;
-    border: 1px solid #334155;
-    border-radius: 6px;
-    font-size: 15px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-.btn-check:hover {
-    background: #2d3748;
-}
-
-/* 🧱 예약 조회 모달 팝업 구조 스타일 복구 및 정렬 강화 */
-.modal-overlay {
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.75);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-    opacity: 0; pointer-events: none;
-    transition: opacity 0.2s ease;
-}
-.modal-overlay.active {
-    opacity: 1; pointer-events: auto;
-}
-.modal-content {
-    background: #2a3142;
-    padding: 35px;
-    border-radius: 12px;
-    width: 95%;
-    max-width: 1250px; 
-    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-    position: relative;
-    max-height: 90vh;
-    overflow-y: auto;
-}
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 30px;
-    border-bottom: 1px solid #3f4a61;
-    padding-bottom: 15px;
-}
-.modal-title { color: #fff; font-size: 18px; font-weight: bold; }
-.modal-close {
-    background: transparent; border: none; color: #a0aec0;
-    font-size: 28px; cursor: pointer; font-weight: bold;
-}
-.modal-close:hover { color: #fff; }
-
-.modal-booking-zone {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-}
-
-/* ==========================================================================
-   📱 [적응형 최적화] 모바일 터치 편의성을 위한 가로 스크롤 레이아웃으로 변경
-   ========================================================================== */
-
-@media (max-width: 1200px) {
-    body { padding: 10px; }
-    .main-content {
-        grid-template-columns: 1fr; /* 1열 종형 배치 */
-        min-height: auto;
-    }
-    .info-zone {
-        border-left: none;
-        border-top: 1px solid #e2e8f0;
-    }
-    .header-bar {
-        flex-direction: column;
-        gap: 12px;
-        text-align: center;
-    }
-    .legend {
-        justify-content: center;
-        flex-wrap: wrap;
-    }
-}
-
-@media (max-width: 768px) {
-    /* [핵심 수정] 모바일에서 억지로 축소(Scale)하지 않고, 터치하기 좋은 29px 크기 유지 + 가로 스크롤 유도 */
-    .seating-container {
-        min-width: 1050px; 
-        transform: none !important; /* 강제 축소 제거 */
-        margin-bottom: 0 !important;
-        padding: 10px 0;
-    }
-    .booking-zone {
+    max-width: 2
