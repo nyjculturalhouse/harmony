@@ -95,40 +95,24 @@
             font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
             vertical-align: middle;
         }
-        /* Custom scrollbar for map */
         .map-overflow::-webkit-scrollbar { width: 6px; height: 6px; }
         .map-overflow::-webkit-scrollbar-track { background: transparent; }
         .map-overflow::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
     </style>
 </head>
 <body class="bg-surface text-on-surface min-h-screen flex flex-col">
+<!-- TopAppBar -->
 <header class="bg-white border-b border-outline-variant/50 shadow-sm flex justify-between items-center px-margin-desktop h-16 w-full fixed top-0 z-50">
 <div class="flex items-center gap-8">
 <span class="font-headline-md text-headline-md font-bold text-primary">두 다산! 스테이지 좌석선택</span>
 </div>
 </header>
 <main class="flex-1 mt-16 flex overflow-hidden">
-<aside class="hidden lg:flex flex-col h-full w-80 bg-surface-container-low border-r border-outline-variant p-6 gap-4 sticky top-16">
-<div class="flex flex-col gap-1 mb-4">
-<h2 class="font-headline-sm text-headline-sm font-bold text-primary">두 다산! 스테이지</h2>
-</div>
-<nav class="flex flex-col gap-2">
-<div class="flex items-center gap-3 p-3 bg-primary-container text-primary rounded-lg font-bold transition-all">
-<span class="material-symbols-outlined" data-icon="event">event</span>
-<span class="font-label-lg text-label-lg">Event Details</span>
-</div>
-<div class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-white hover:text-primary rounded-lg transition-all duration-200 cursor-pointer">
-<span class="material-symbols-outlined" data-icon="event_seat">event_seat</span>
-<span class="font-label-lg text-label-lg">Seat Map</span>
-</div>
-<div class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-white hover:text-primary rounded-lg transition-all duration-200 cursor-pointer">
-<span class="material-symbols-outlined" data-icon="contact_page">contact_page</span>
-<span class="font-label-lg text-label-lg">Ticketing Info</span>
-</div>
-</nav>
-</aside>
+<!-- Content Canvas (Removed Sidebar) -->
 <div class="flex-1 flex flex-col md:flex-row p-6 gap-6 overflow-hidden">
+<!-- Left: Seat Map Area -->
 <div class="flex-1 bg-white border border-outline-variant rounded-lg flex flex-col overflow-hidden shadow-sm">
+<!-- Map Header / Legend -->
 <div class="p-4 border-b border-outline-variant flex flex-wrap items-center justify-between gap-4">
 <h3 class="font-headline-sm text-headline-sm text-primary font-bold">1층 (Floor 1)</h3>
 <div class="flex gap-4">
@@ -152,13 +136,17 @@
 </div>
 </div>
 </div>
+<!-- Interactive Map Area -->
 <div class="flex-1 overflow-auto p-8 bg-[#fafafa] map-overflow">
 <div class="min-w-[800px] flex flex-col items-center">
+<!-- Stage -->
 <div class="w-3/4 max-w-2xl h-12 bg-on-background text-white flex items-center justify-center rounded-b-3xl mb-16 shadow-sm">
 <span class="font-label-lg tracking-[0.5em] text-white/80">STAGE</span>
 </div>
+<!-- Seat Blocks -->
 <div class="flex gap-12 w-full justify-center">
-<div class="flex flex-col gap-[4px] pt-[28px] text-right pr-4">
+<!-- Rows Labels (Left) -->
+<div class="flex flex-col gap-[4px] pt-[2px] text-right pr-4">
 <span class="h-6 flex items-center font-label-sm text-on-surface-variant opacity-60">1열</span>
 <span class="h-6 flex items-center font-label-sm text-on-surface-variant opacity-60">2열</span>
 <span class="h-6 flex items-center font-label-sm text-on-surface-variant opacity-60">3열</span>
@@ -170,48 +158,51 @@
 <span class="h-6 flex items-center font-label-sm text-on-surface-variant opacity-60">9열</span>
 <span class="h-6 flex items-center font-label-sm text-on-surface-variant opacity-60">10열</span>
 </div>
+<!-- Left Block -->
 <div class="flex flex-col gap-1">
 <div class="grid grid-cols-6 gap-seat-gap">
 <script>
                                         for(let i=1; i<=60; i++) {
                                             const isReserved = [15, 16, 22, 23, 44].includes(i);
                                             const colorClass = isReserved ? 'bg-on-background/20 cursor-not-allowed' : 'bg-outline-variant hover:bg-primary-container hover:text-primary cursor-pointer';
-                                            document.write(`<div class="w-6 h-6 rounded-sm ${colorClass} flex items-center justify-center font-label-sm text-[10px] transition-colors">${i}</div>`);
+                                            document.write(`<div data-block="1" data-seat="${i}" class="seat-item w-6 h-6 rounded-sm ${colorClass} flex items-center justify-center font-label-sm text-[10px] transition-colors">${i}</div>`);
                                         }
                                     </script>
 </div>
 </div>
+<!-- Center Block -->
 <div class="flex flex-col gap-1">
 <div class="grid grid-cols-10 gap-seat-gap">
 <script>
                                         for(let i=1; i<=100; i++) {
                                             let style = 'bg-outline-variant hover:bg-primary-container hover:text-primary cursor-pointer';
                                             let content = i;
+                                            let isAccessible = false;
+                                            let isReserved = false;
                                             
-                                            // Special seats
                                             if ([1, 2, 3, 4, 5].includes(i)) {
-                                                style = 'bg-secondary-fixed-dim text-white';
+                                                style = 'bg-secondary-fixed-dim text-white hover:bg-secondary-fixed-dim/80 cursor-pointer';
                                                 content = '<span class="material-symbols-outlined text-[12px]" style="font-variation-settings: \'FILL\' 1;">accessible</span>';
-                                            }
-                                            if (i === 54 || i === 55) {
-                                                style = 'bg-primary text-white ring-2 ring-primary ring-offset-1 scale-105';
+                                                isAccessible = true;
                                             }
                                             if ([40, 41, 70, 71, 72].includes(i)) {
                                                 style = 'bg-on-background/20 cursor-not-allowed';
+                                                isReserved = true;
                                             }
                                             
-                                            document.write(`<div class="w-6 h-6 rounded-sm ${style} flex items-center justify-center font-label-sm text-[10px] transition-all">${content}</div>`);
+                                            document.write(`<div data-block="2" data-seat="${i}" data-accessible="${isAccessible}" data-reserved="${isReserved}" class="seat-item w-6 h-6 rounded-sm ${style} flex items-center justify-center font-label-sm text-[10px] transition-all">${content}</div>`);
                                         }
                                     </script>
 </div>
 </div>
+<!-- Right Block -->
 <div class="flex flex-col gap-1">
 <div class="grid grid-cols-6 gap-seat-gap">
 <script>
                                         for(let i=1; i<=60; i++) {
                                             const isReserved = [12, 13, 29, 30].includes(i);
                                             const colorClass = isReserved ? 'bg-on-background/20 cursor-not-allowed' : 'bg-outline-variant hover:bg-primary-container hover:text-primary cursor-pointer';
-                                            document.write(`<div class="w-6 h-6 rounded-sm ${colorClass} flex items-center justify-center font-label-sm text-[10px] transition-colors">${i}</div>`);
+                                            document.write(`<div class="seat-item data-block="3" data-seat="${i}" w-6 h-6 rounded-sm ${colorClass} flex items-center justify-center font-label-sm text-[10px] transition-colors">${i}</div>`);
                                         }
                                     </script>
 </div>
@@ -220,7 +211,9 @@
 </div>
 </div>
 </div>
+<!-- Right: Sidebar Form -->
 <div class="w-full md:w-96 flex flex-col gap-6">
+<!-- Information Form -->
 <div class="bg-white border border-outline-variant rounded-lg p-6 shadow-sm flex flex-col gap-6">
 <h3 class="font-headline-sm text-headline-sm text-primary border-b border-outline-variant pb-4">MY 티켓팅 정보</h3>
 <div class="space-y-4">
@@ -235,22 +228,22 @@
 </div>
 <div class="bg-surface-container-low rounded-lg p-5 border border-outline-variant/30 flex flex-col gap-4">
 <h4 class="font-label-lg text-label-lg text-on-surface border-b border-outline-variant/30 pb-2">선택 내역 확인</h4>
-<div class="flex justify-between items-center">
-<span class="font-body-sm text-body-sm text-on-surface-variant">선택한 좌석</span>
-<div class="flex flex-wrap justify-end gap-1 max-w-[150px]">
-<span id="selectedSeatsDisplay" class="bg-primary text-white text-[10px] px-2 py-0.5 rounded-full font-bold">C열 54</span>
-<span class="bg-primary text-white text-[10px] px-2 py-0.5 rounded-full font-bold">C열 55</span>
+<div class="flex justify-between items-start">
+<span class="font-body-sm text-body-sm text-on-surface-variant mt-1">선택한 좌석</span>
+<div id="selectedSeatsDisplay" class="flex flex-wrap justify-end gap-1 max-w-[180px]">
+<span class="text-on-surface-variant text-body-sm">없음</span>
 </div>
 </div>
 <div class="flex justify-between items-center">
 <span class="font-body-sm text-body-sm text-on-surface-variant">예매 수량</span>
 <div class="flex items-baseline gap-1">
-<span id="ticketCount" class="font-headline-md text-headline-md text-primary">2</span>
+<span id="ticketCount" class="font-headline-md text-headline-md text-primary">0</span>
 <span class="font-label-sm text-label-sm text-on-surface-variant">/ 5매</span>
 </div>
 </div>
 </div>
 </div>
+<!-- Action Buttons -->
 <div class="flex flex-col gap-3">
 <button type="button" id="checkBtn" class="w-full py-4 border border-outline text-on-surface rounded-lg font-label-lg hover:bg-surface-container-low transition-colors active:opacity-70">예약 확인하기</button>
 <button type="button" id="submitBtn" class="w-full py-4 bg-primary text-white rounded-lg font-headline-md font-bold hover:opacity-90 transition-all active:scale-[0.98] shadow-md flex items-center justify-center gap-2">예약 확정하기</button>
@@ -258,6 +251,7 @@
 </div>
 </div>
 </main>
+<!-- Footer -->
 <footer class="bg-white border-t border-outline-variant flex flex-col md:flex-row justify-between items-center px-margin-desktop py-8 w-full z-10">
 <div class="flex flex-col gap-2">
 <span class="font-label-lg text-label-lg font-bold text-primary">SeatSelect Pro</span>
@@ -271,20 +265,62 @@
 </div>
 </footer>
 <script>
-    // Micro-interaction for seat selection simulation
-    document.querySelectorAll('.grid div').forEach(seat => {
+    let selectedSeats = [];
+
+    document.querySelectorAll('.seat-item').forEach(seat => {
         seat.addEventListener('click', function() {
-            if (!this.classList.contains('cursor-not-allowed')) {
-                const isSelected = this.classList.contains('bg-primary');
-                if (isSelected) {
-                    this.classList.remove('bg-primary', 'text-white', 'ring-2', 'ring-primary', 'ring-offset-1', 'scale-105');
-                    this.classList.add('bg-outline-variant', 'hover:bg-primary-container', 'hover:text-primary');
+            if (this.classList.contains('cursor-not-allowed') || this.getAttribute('data-reserved') === 'true') {
+                return;
+            }
+
+            const block = this.getAttribute('data-block') || "3";
+            const seatNum = this.getAttribute('data-seat') || this.innerText.trim();
+            const isAccessible = this.getAttribute('data-accessible') === 'true';
+            const seatIdentifier = `${block}블록 ${seatNum}번`;
+
+            const index = selectedSeats.indexOf(seatIdentifier);
+
+            if (index > -1) {
+                // Deselect
+                selectedSeats.splice(index, 1);
+                this.classList.remove('bg-primary', 'text-white', 'ring-2', 'ring-primary', 'ring-offset-1', 'scale-105');
+                if (isAccessible) {
+                    this.classList.add('bg-secondary-fixed-dim', 'text-white');
                 } else {
-                    this.classList.add('bg-primary', 'text-white', 'ring-2', 'ring-primary', 'ring-offset-1', 'scale-105');
+                    this.classList.add('bg-outline-variant', 'hover:bg-primary-container', 'hover:text-primary');
+                }
+            } else {
+                // Select (Max 5 limitation)
+                if (selectedSeats.length >= 5) {
+                    alert('최대 5매까지만 선택 가능합니다.');
+                    return;
+                }
+                selectedSeats.push(seatIdentifier);
+                if (isAccessible) {
+                    this.classList.remove('bg-secondary-fixed-dim');
+                } else {
                     this.classList.remove('bg-outline-variant', 'hover:bg-primary-container', 'hover:text-primary');
                 }
+                this.classList.add('bg-primary', 'text-white', 'ring-2', 'ring-primary', 'ring-offset-1', 'scale-105');
             }
+
+            updateSummary();
         });
     });
+
+    function updateSummary() {
+        const displayContainer = document.getElementById('selectedSeatsDisplay');
+        const countDisplay = document.getElementById('ticketCount');
+
+        countDisplay.innerText = selectedSeats.length;
+
+        if (selectedSeats.length === 0) {
+            displayContainer.innerHTML = '<span class="text-on-surface-variant text-body-sm">없음</span>';
+        } else {
+            displayContainer.innerHTML = selectedSeats.map(seat => 
+                `<span class="bg-primary text-white text-[10px] px-2 py-0.5 rounded-full font-bold transition-all">${seat}</span>`
+            ).join('');
+        }
+    }
 </script>
 </body></html>
