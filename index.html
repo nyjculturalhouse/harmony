@@ -1,68 +1,316 @@
 <!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>티켓 예매 - 두 다산! 스테이지</title>
-    <link rel="stylesheet" href="style.css">
+<html class="light" lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>티켓 예매 - 두 다산! 스테이지</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-surface": "#213145",
+                        "surface-container-high": "#dce9ff",
+                        "background": "#fcf8fb",
+                        "secondary-fixed-dim": "#9fcaff",
+                        "inverse-primary": "#adc7f7",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-variant": "#d3e4fe",
+                        "on-secondary-fixed-variant": "#00497e",
+                        "on-background": "#2c2c2c",
+                        "on-secondary-container": "#004172",
+                        "error": "#ba1a1a",
+                        "tertiary-fixed": "#ffddb8",
+                        "tertiary": "#311c00",
+                        "primary-fixed": "#d6e3ff",
+                        "inverse-on-surface": "#eaf1ff",
+                        "outline": "#74777f",
+                        "secondary-fixed": "#d2e4ff",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed": "#2a1700",
+                        "tertiary-container": "#4e2f00",
+                        "surface-container-highest": "#d3e4fe",
+                        "outline-variant": "#e1e3e8",
+                        "secondary-container": "#66affe",
+                        "on-primary-fixed": "#001b3c",
+                        "secondary": "#4154ff",
+                        "on-primary": "#ffffff",
+                        "surface": "#fcf8fb",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "on-surface-variant": "#5f6368",
+                        "on-tertiary-container": "#dd8d00",
+                        "surface-container-low": "#f6f3f5",
+                        "surface-dim": "#dcd9dc",
+                        "primary": "#4154ff",
+                        "on-error-container": "#93000a",
+                        "on-secondary-fixed": "#001d37",
+                        "on-tertiary": "#ffffff",
+                        "surface-container": "#e5eeff",
+                        "on-primary-container": "#4154ff",
+                        "on-error": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "primary-fixed-dim": "#adc7f7",
+                        "on-primary-fixed-variant": "#2d476f",
+                        "surface-tint": "#4154ff",
+                        "on-surface": "#1d1d1f",
+                        "surface-bright": "#fcf8fb",
+                        "primary-container": "#e8eaff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.5rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "seat-gap": "4px",
+                        "margin-mobile": "16px",
+                        "gutter": "24px",
+                        "container-max": "1280px",
+                        "margin-desktop": "40px",
+                        "section-padding": "32px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Be Vietnam Pro"],
+                        "label-md": ["Be Vietnam Pro"],
+                        "body-lg": ["Be Vietnam Pro"],
+                        "label-sm": ["Be Vietnam Pro"],
+                        "headline-lg": ["Be Vietnam Pro"],
+                        "label-lg": ["Be Vietnam Pro"],
+                        "headline-sm": ["Be Vietnam Pro"],
+                        "body-sm": ["Be Vietnam Pro"],
+                        "headline-md": ["Be Vietnam Pro"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Be Vietnam Pro', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        /* Custom scrollbar for map */
+        .map-overflow::-webkit-scrollbar { width: 6px; height: 6px; }
+        .map-overflow::-webkit-scrollbar-track { background: transparent; }
+        .map-overflow::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    </style>
 </head>
-<body>
-    <div class="container">
-        <div class="header-bar">
-            <h1>두 다산! 스테이지 좌석선택</h1>
-            <div class="legend">
-                <span class="legend-item"><span class="box available"></span> 일반석</span>
-                <span class="legend-item"><span class="box wheelchair"></span> 장애인석</span>
-                <span class="legend-item"><span class="box selected"></span> 선택좌석</span>
-                <span class="legend-item"><span class="box reserved"></span> 예매완료</span>
-            </div>
-        </div>
-        
-        <div class="main-content">
-            
-            <div class="booking-zone">
-                <div class="stage">STAGE</div>
-                
-                <div class="seating-container">
-                    <div class="floor-title">1층 (Floor 1)</div>
-                    <div id="floor1" class="floor"></div>
-                </div>
-            </div>
-
-            <div class="info-zone">
-                <div class="panel-title">MY 티켓팅 정보</div>
-                <div class="form-section">
-                    <div class="input-group">
-                        <label for="name">이름</label>
-                        <input type="text" id="name" placeholder="예매자 성명 입력" required>
-                    </div>
-                    <div class="input-group">
-                        <label for="phone">연락처</label>
-                        <input type="tel" id="phone" placeholder="010-0000-0000" required>
-                    </div>
-
-                    <div class="summary-box">
-                        <div class="summary-title">선택 내역 확인</div>
-                        <div class="summary-item">
-                            <span>선택한 좌석</span>
-                            <strong id="selectedSeatsDisplay">없음</strong>
-                        </div>
-                        <div class="summary-item">
-                            <span>예매 수량</span>
-                            <span><strong id="ticketCount">0</strong> / 5매</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="action-area">
-                    <button type="button" id="checkBtn" class="btn-check">예약 확인하기</button>
-                    <button type="button" id="submitBtn" class="btn-submit">예약 확정하기</button>
-                </div>
-            </div>
-
-        </div>
-    </div>
-
-    <script src="script.js"></script>
-</body>
-</html>
+<body class="bg-surface text-on-surface min-h-screen flex flex-col">
+<header class="bg-white border-b border-outline-variant/50 shadow-sm flex justify-between items-center px-margin-desktop h-16 w-full fixed top-0 z-50">
+<div class="flex items-center gap-8">
+<span class="font-headline-md text-headline-md font-bold text-primary">두 다산! 스테이지 좌석선택</span>
+<nav class="hidden md:flex items-center gap-6">
+<a class="font-label-md text-label-md text-primary border-b-2 border-primary pb-1" href="#">Venues</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="#">My Bookings</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="#">Support</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 rounded-full hover:bg-primary-container text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 rounded-full hover:bg-primary-container text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-surface-container-high overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuASVBdcOka1MPUyYXVE247H75wmpbk7l9PzsJtNRlB89Qfbum76_Lzf8TpaRKp0WLfcVW-lyDNUNatPbdzzhBo4MkGjAO1Rd3MuEOTzUkq-Qqmiu6Ym9Cdkp0VKmnCzmrrlr3YV_JgIFcTnXVJm6cnInbQuZotyMZt17ovT6KGia5o0zvbl9yQURsjCSrxiT_GdO05i-PSxDEiqigHSB73reWsyae70nEQNuF9cIpBUyEhoL2EoHxf3"/>
+</div>
+</div>
+</header>
+<main class="flex-1 mt-16 flex overflow-hidden">
+<aside class="hidden lg:flex flex-col h-full w-80 bg-surface-container-low border-r border-outline-variant p-6 gap-4 sticky top-16">
+<div class="flex flex-col gap-1 mb-4">
+<h2 class="font-headline-sm text-headline-sm font-bold text-primary">두 다산! 스테이지</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-sm" data-icon="timer">timer</span>
+                    Reservation Active
+                </p>
+</div>
+<nav class="flex flex-col gap-2">
+<div class="flex items-center gap-3 p-3 bg-primary-container text-primary rounded-lg font-bold transition-all">
+<span class="material-symbols-outlined" data-icon="event">event</span>
+<span class="font-label-lg text-label-lg">Event Details</span>
+</div>
+<div class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-white hover:text-primary rounded-lg transition-all duration-200 cursor-pointer">
+<span class="material-symbols-outlined" data-icon="event_seat">event_seat</span>
+<span class="font-label-lg text-label-lg">Seat Map</span>
+</div>
+<div class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-white hover:text-primary rounded-lg transition-all duration-200 cursor-pointer">
+<span class="material-symbols-outlined" data-icon="contact_page">contact_page</span>
+<span class="font-label-lg text-label-lg">Ticketing Info</span>
+</div>
+</nav>
+<div class="mt-auto pt-6 border-t border-outline-variant flex flex-col gap-2">
+<div class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-white rounded-lg cursor-pointer transition-all">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-lg text-label-lg">Settings</span>
+</div>
+</div>
+</aside>
+<div class="flex-1 flex flex-col md:flex-row p-6 gap-6 overflow-hidden">
+<div class="flex-1 bg-white border border-outline-variant rounded-lg flex flex-col overflow-hidden shadow-sm">
+<div class="p-4 border-b border-outline-variant flex flex-wrap items-center justify-between gap-4">
+<h3 class="font-headline-sm text-headline-sm text-primary font-bold">1층 (Floor 1)</h3>
+<div class="flex gap-4">
+<div class="flex items-center gap-2">
+<div class="w-4 h-4 rounded-sm bg-outline-variant"></div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">일반석</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-4 h-4 rounded-sm bg-secondary-fixed-dim flex items-center justify-center">
+<span class="material-symbols-outlined text-[10px] text-white" data-icon="accessible" style="font-variation-settings: 'FILL' 1;">accessible</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">장애인석</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-4 h-4 rounded-sm bg-primary"></div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">선택좌석</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-4 h-4 rounded-sm bg-[#1d1d1f]"></div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">예매완료</span>
+</div>
+</div>
+</div>
+<div class="flex-1 overflow-auto p-8 bg-[#fafafa] map-overflow">
+<div class="min-w-[800px] flex flex-col items-center">
+<div class="w-3/4 max-w-2xl h-12 bg-on-background text-white flex items-center justify-center rounded-b-3xl mb-16 shadow-sm">
+<span class="font-label-lg tracking-[0.5em] text-white/80">STAGE</span>
+</div>
+<div class="flex gap-12 w-full justify-center">
+<div class="flex flex-col gap-[4px] pt-[28px] text-right pr-4">
+<span class="h-6 flex items-center font-label-sm text-on-surface-variant opacity-60">1열</span>
+<span class="h-6 flex items-center font-label-sm text-on-surface-variant opacity-60">2열</span>
+<span class="h-6 flex items-center font-label-sm text-on-surface-variant opacity-60">3열</span>
+<span class="h-6 flex items-center font-label-sm text-on-surface-variant opacity-60">4열</span>
+<span class="h-6 flex items-center font-label-sm text-on-surface-variant opacity-60">5열</span>
+<span class="h-6 flex items-center font-label-sm text-on-surface-variant opacity-60">6열</span>
+<span class="h-6 flex items-center font-label-sm text-on-surface-variant opacity-60">7열</span>
+<span class="h-6 flex items-center font-label-sm text-on-surface-variant opacity-60">8열</span>
+<span class="h-6 flex items-center font-label-sm text-on-surface-variant opacity-60">9열</span>
+<span class="h-6 flex items-center font-label-sm text-on-surface-variant opacity-60">10열</span>
+</div>
+<div class="flex flex-col gap-1">
+<div class="grid grid-cols-6 gap-seat-gap">
+<script>
+                                        for(let i=1; i<=60; i++) {
+                                            const isReserved = [15, 16, 22, 23, 44].includes(i);
+                                            const colorClass = isReserved ? 'bg-on-background/20 cursor-not-allowed' : 'bg-outline-variant hover:bg-primary-container hover:text-primary cursor-pointer';
+                                            document.write(`<div class="w-6 h-6 rounded-sm ${colorClass} flex items-center justify-center font-label-sm text-[10px] transition-colors">${i}</div>`);
+                                        }
+                                    </script>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<div class="grid grid-cols-10 gap-seat-gap">
+<script>
+                                        for(let i=1; i<=100; i++) {
+                                            let style = 'bg-outline-variant hover:bg-primary-container hover:text-primary cursor-pointer';
+                                            let content = i;
+                                            
+                                            // Special seats
+                                            if ([1, 2, 3, 4, 5].includes(i)) {
+                                                style = 'bg-secondary-fixed-dim text-white';
+                                                content = '<span class="material-symbols-outlined text-[12px]" style="font-variation-settings: \'FILL\' 1;">accessible</span>';
+                                            }
+                                            if (i === 54 || i === 55) {
+                                                style = 'bg-primary text-white ring-2 ring-primary ring-offset-1 scale-105';
+                                            }
+                                            if ([40, 41, 70, 71, 72].includes(i)) {
+                                                style = 'bg-on-background/20 cursor-not-allowed';
+                                            }
+                                            
+                                            document.write(`<div class="w-6 h-6 rounded-sm ${style} flex items-center justify-center font-label-sm text-[10px] transition-all">${content}</div>`);
+                                        }
+                                    </script>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<div class="grid grid-cols-6 gap-seat-gap">
+<script>
+                                        for(let i=1; i<=60; i++) {
+                                            const isReserved = [12, 13, 29, 30].includes(i);
+                                            const colorClass = isReserved ? 'bg-on-background/20 cursor-not-allowed' : 'bg-outline-variant hover:bg-primary-container hover:text-primary cursor-pointer';
+                                            document.write(`<div class="w-6 h-6 rounded-sm ${colorClass} flex items-center justify-center font-label-sm text-[10px] transition-colors">${i}</div>`);
+                                        }
+                                    </script>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="w-full md:w-96 flex flex-col gap-6">
+<div class="bg-white border border-outline-variant rounded-lg p-6 shadow-sm flex flex-col gap-6">
+<h3 class="font-headline-sm text-headline-sm text-primary border-b border-outline-variant pb-4">MY 티켓팅 정보</h3>
+<div class="space-y-4">
+<div class="flex flex-col gap-2">
+<label class="font-label-md text-label-md text-on-surface-variant" for="name">이름</label>
+<input class="w-full px-4 py-3 bg-surface-container-low border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all text-on-surface font-body-md" id="name" placeholder="예매자 성명 입력" type="text" required/>
+</div>
+<div class="flex flex-col gap-2">
+<label class="font-label-md text-label-md text-on-surface-variant" for="phone">연락처</label>
+<input class="w-full px-4 py-3 bg-surface-container-low border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all text-on-surface font-body-md" id="phone" placeholder="010-0000-0000" type="tel" required/>
+</div>
+</div>
+<div class="bg-surface-container-low rounded-lg p-5 border border-outline-variant/30 flex flex-col gap-4">
+<h4 class="font-label-lg text-label-lg text-on-surface border-b border-outline-variant/30 pb-2">선택 내역 확인</h4>
+<div class="flex justify-between items-center">
+<span class="font-body-sm text-body-sm text-on-surface-variant">선택한 좌석</span>
+<div class="flex flex-wrap justify-end gap-1 max-w-[150px]">
+<span id="selectedSeatsDisplay" class="bg-primary text-white text-[10px] px-2 py-0.5 rounded-full font-bold">C열 54</span>
+<span class="bg-primary text-white text-[10px] px-2 py-0.5 rounded-full font-bold">C열 55</span>
+</div>
+</div>
+<div class="flex justify-between items-center">
+<span class="font-body-sm text-body-sm text-on-surface-variant">예매 수량</span>
+<div class="flex items-baseline gap-1">
+<span id="ticketCount" class="font-headline-md text-headline-md text-primary">2</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">/ 5매</span>
+</div>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-3">
+<button type="button" id="checkBtn" class="w-full py-4 border border-outline text-on-surface rounded-lg font-label-lg hover:bg-surface-container-low transition-colors active:opacity-70">예약 확인하기</button>
+<button type="button" id="submitBtn" class="w-full py-4 bg-primary text-white rounded-lg font-headline-md font-bold hover:opacity-90 transition-all active:scale-[0.98] shadow-md flex items-center justify-center gap-2">예약 확정하기</button>
+</div>
+</div>
+</div>
+</main>
+<footer class="bg-white border-t border-outline-variant flex flex-col md:flex-row justify-between items-center px-margin-desktop py-8 w-full z-10">
+<div class="flex flex-col gap-2">
+<span class="font-label-lg text-label-lg font-bold text-primary">SeatSelect Pro</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant">© 2024 Professional Seat Reservation System. All rights reserved.</p>
+</div>
+<div class="flex gap-6 mt-4 md:mt-0">
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary hover:underline" href="#">Privacy Policy</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary hover:underline" href="#">Terms of Service</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary hover:underline" href="#">Venue Partners</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary hover:underline" href="#">Contact Us</a>
+</div>
+</footer>
+<script>
+    // Micro-interaction for seat selection simulation
+    document.querySelectorAll('.grid div').forEach(seat => {
+        seat.addEventListener('click', function() {
+            if (!this.classList.contains('cursor-not-allowed')) {
+                const isSelected = this.classList.contains('bg-primary');
+                if (isSelected) {
+                    this.classList.remove('bg-primary', 'text-white', 'ring-2', 'ring-primary', 'ring-offset-1', 'scale-105');
+                    this.classList.add('bg-outline-variant', 'hover:bg-primary-container', 'hover:text-primary');
+                } else {
+                    this.classList.add('bg-primary', 'text-white', 'ring-2', 'ring-primary', 'ring-offset-1', 'scale-105');
+                    this.classList.remove('bg-outline-variant', 'hover:bg-primary-container', 'hover:text-primary');
+                }
+            }
+        });
+    });
+</script>
+</body></html>
